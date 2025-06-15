@@ -253,7 +253,7 @@ const DashboardAdmin = () => {
             </div>
           </div>
           )}
-          {activeMenu === 'colleges' && <Colleges />}
+          {activeMenu === 'colleges' && <Colleges user={user}/>}
           {activeMenu === 'departments' && <Departments />}
           {activeMenu === 'programs' && <Programs />}
           {activeMenu === 'courses' && <Courses />}
