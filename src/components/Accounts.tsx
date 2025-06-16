@@ -1,6 +1,7 @@
+// deno-lint-ignore-file no-explicit-any
 import React, { useEffect, useState } from 'react';
 import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient.ts';
 import { ToastContainer, toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 import 'react-toastify/dist/ReactToastify.css';
@@ -164,11 +165,11 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
         'role_name',
       ],
       [
-        'u12345',
-        'jdoe',
+        '2022.....001',
+        'JohnD',
         'John',
         'Doe',
-        'A',
+        'A.',
         'john.doe@example.com',
         '09171234567',
         'Active',
@@ -181,7 +182,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -275,13 +276,13 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
         <h2 className="accounts-title">Manage Accounts</h2>
         <div className="search-bar">
           <input placeholder="Search..." value={searchTerm} onChange={handleSearchChange} />
-          <button className="search-button"><FaSearch /></button>
+          <button type="button" className="search-button"><FaSearch /></button>
         </div>
       </div>
 
       <div className="accounts-actions">
-        <button className="action-button add-new" onClick={handleAddAccount}>Add New Account</button>
-        <button className="action-button import" onClick={() => setShowImport(true)}>Import Accounts</button>
+        <button type="button"  className="action-button add-new" onClick={handleAddAccount}>Add New Account</button>
+        <button type="button" className="action-button import" onClick={() => setShowImport(true)}>Import Accounts</button>
       </div>
 
       <div className="accounts-table-container">
@@ -311,8 +312,8 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
                 <td>{u.status}</td>
                 <td>{u.role}</td>
                 <td className="action-buttons">
-                  <button className="icon-button edit-button" onClick={() => toast.info('Edit coming soon')}><FaEdit /></button>
-                  <button className="icon-button delete-button" onClick={() => handleDelete(u.user_id)}><FaTrash /></button>
+                  <button type="button" className="icon-button edit-button" onClick={() => toast.info('Edit coming soon')}><FaEdit /></button>
+                  <button type="button" className="icon-button delete-button" onClick={() => handleDelete(u.user_id)}><FaTrash /></button>
                 </td>
               </tr>
             ))}
@@ -365,8 +366,8 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
               </div>
 
 
-              <button onClick={handleSaveAccount}>Save</button>
-              <button onClick={() => setShowModal(false)}>Cancel</button>
+              <button type="button" onClick={handleSaveAccount}>Save</button>
+              <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
             </div>
           </div>
         </div>
@@ -377,11 +378,11 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
           <div className="modal">
             <div className="modal-content">
               <h4>Import Accounts from Excel</h4>
-              <button className="modal-button download" onClick={downloadTemplate}>Download Template</button>
+              <button type="button" className="modal-button download" onClick={downloadTemplate}>Download Template</button>
               <input type="file" accept=".xlsx, .xls" onChange={handleImport} />
               <div className="modal-buttons">
-                <button onClick={() => setShowImport(false)}>Done</button>
-                <button onClick={() => setShowImport(false)}>Cancel</button>
+                <button type="button" onClick={() => setShowImport(false)}>Done</button>
+                <button type="button" onClick={() => setShowImport(false)}>Cancel</button>
               </div>
             </div>
           </div>

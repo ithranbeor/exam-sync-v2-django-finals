@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient'; // Make sure this is correctly set
+import { supabase } from '../lib/supabaseClient.ts'; // Make sure this is correctly set
 import {
   FaHome, FaBuilding, FaClipboardList, FaBook, FaUserGraduate,
   FaChalkboardTeacher, FaCalendarAlt, FaDoorOpen, FaUser,
   FaUsers, FaSignOutAlt, FaBookOpen, FaCalendarDay, FaUsersCog
 } from 'react-icons/fa';
 import '../styles/dashboardFaculty.css';
-import Colleges from '../components/Colleges';
-import Departments from '../components/Departments';
-import Programs from '../components/Programs';
-import Courses from '../components/Courses';
-import SectionCourses from '../components/SectionCourses';
-import Terms from '../components/Terms'; 
-import Buildings from '../components/Buildings'; 
-import Rooms from '../components/Rooms'; 
-import ExamPeriod from '../components/ExamPeriod'; 
-import Accounts from '../components/Accounts'; 
-import RolesPermission from '../components/RolesPermission'; 
-import Profile from '../components/Profile';
+import Colleges from '../components/Colleges.tsx';
+import Departments from '../components/Departments.tsx';
+import Programs from '../components/Programs.tsx';
+import Courses from '../components/Courses.tsx';
+import SectionCourses from '../components/SectionCourses.tsx';
+import Terms from '../components/Terms.tsx'; 
+import Buildings from '../components/Buildings.tsx'; 
+import Rooms from '../components/Rooms.tsx'; 
+import ExamPeriod from '../components/ExamPeriod.tsx'; 
+import Accounts from '../components/Accounts.tsx'; 
+import RolesPermission from '../components/RolesPermission.tsx'; 
+import Profile from '../components/Profile.tsx';
 
 const iconStyle = { className: 'icon', size: 20 };
 
@@ -52,7 +52,8 @@ const DashboardAdmin = () => {
       if (error) {
         console.error('Error fetching roles:', error.message);
       } else {
-        const roleNames = data.map((row: any) => row.role_name);
+        type RoleRow = { role_name: string };
+        const roleNames = data.map((row: RoleRow) => row.role_name);
         setRoles(roleNames);
       }
     };
@@ -108,90 +109,90 @@ const DashboardAdmin = () => {
           <nav className="sidebar-nav">
             <ul>
               <li className={activeMenu === 'dashboard' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('dashboard')}>
+                <button type="button" onClick={() => setActiveMenu('dashboard')}>
                   <FaHome {...iconStyle} />
                   {isSidebarOpen && <span>Dashboard</span>}
                 </button>
               </li>
               <div className="sidebar-divider"></div>
               <li className={activeMenu === 'colleges' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('colleges')}>
+                <button type="button" onClick={() => setActiveMenu('colleges')}>
                   <FaUserGraduate {...iconStyle} />
                   {isSidebarOpen && <span>Colleges</span>}
                 </button>
               </li>
 
               <li className={activeMenu === 'departments' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('departments')}>
+                <button type="button" onClick={() => setActiveMenu('departments')}>
                   <FaChalkboardTeacher {...iconStyle} />
                   {isSidebarOpen && <span>Departments</span>}
                 </button>
               </li>
               <li className={activeMenu === 'programs' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('programs')}>
+                <button type="button" onClick={() => setActiveMenu('programs')}>
                   <FaBookOpen {...iconStyle} />
                   {isSidebarOpen && <span>Programs</span>}
                 </button>
               </li>
               <li className={activeMenu === 'courses' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('courses')}>
+                <button type="button" onClick={() => setActiveMenu('courses')}>
                   <FaBook {...iconStyle} />
                   {isSidebarOpen && <span>Courses</span>}
                 </button>
               </li>
               <li className={activeMenu === 'section-courses' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('section-courses')}>
+                <button type="button" onClick={() => setActiveMenu('section-courses')}>
                   <FaClipboardList {...iconStyle} />
                   {isSidebarOpen && <span>Section Courses</span>}
                 </button>
               </li>
               <li className={activeMenu === 'terms' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('terms')}>
+                <button type="button" onClick={() => setActiveMenu('terms')}>
                   <FaCalendarDay {...iconStyle} />
                   {isSidebarOpen && <span>Terms</span>}
                 </button>
               </li>
               <div className="sidebar-divider"></div>
               <li className={activeMenu === 'buildings' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('buildings')}>
+                <button type="button" onClick={() => setActiveMenu('buildings')}>
                   <FaBuilding {...iconStyle} />
                   {isSidebarOpen && <span>Buildings</span>}
                 </button>
               </li>
               <li className={activeMenu === 'rooms' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('rooms')}>
+                <button type="button" onClick={() => setActiveMenu('rooms')}>
                   <FaDoorOpen {...iconStyle} />
                   {isSidebarOpen && <span>Rooms</span>}
                 </button>
               </li>
               <li className={activeMenu === 'exam-period' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('exam-period')}>
+                <button type="button" onClick={() => setActiveMenu('exam-period')}>
                   <FaCalendarAlt {...iconStyle} />
                   {isSidebarOpen && <span>Exam Period</span>}
                 </button>
               </li>
               <div className="sidebar-divider"></div>
               <li className={activeMenu === 'accounts' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('accounts')}>
+                <button type="button" onClick={() => setActiveMenu('accounts')}>
                   <FaUsers {...iconStyle} />
                   {isSidebarOpen && <span>Accounts</span>}
                 </button>
               </li>
               <li className={activeMenu === 'roles-permission' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('roles-permission')}>
+                <button type="button" onClick={() => setActiveMenu('roles-permission')}>
                   <FaUsersCog {...iconStyle} />
                   {isSidebarOpen && <span>Roles & Permission</span>}
                 </button>
               </li>
               <div className="sidebar-divider"></div>
               <li className={activeMenu === 'profile' ? 'active' : ''}>
-                <button onClick={() => setActiveMenu('profile')}>
+                <button type="button" onClick={() => setActiveMenu('profile')}>
                   <FaUser {...iconStyle} />
                   {isSidebarOpen && <span>Profile</span>}
                 </button>
               </li>
               <li>
-                <button onClick={handleLogout}>
+                <button type="button" onClick={handleLogout}>
                   <FaSignOutAlt {...iconStyle} />
                   {isSidebarOpen && <span>Logout</span>}
                 </button>
@@ -241,13 +242,13 @@ const DashboardAdmin = () => {
                 <div className="card try-thing-card">
                   <img src="./src/assets/ba.png" alt="Set Availability" className="try-thing-img" />
                   <p>Try Setting Your Availability</p>
-                  <button className="set-button">Set</button>
+                  <button type="button" className="set-button">Set</button>
                 </div>
 
                 <div className="card try-thing-card">
                   <img src="./src/assets/ba.png" alt="View Exam Schedule" className="try-thing-img" />
                   <p>View Exam Schedule</p>
-                  <button className="view-button">View</button>
+                  <button type="button" className="view-button">View</button>
                 </div>
               </div>
             </div>

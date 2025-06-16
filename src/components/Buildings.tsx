@@ -1,5 +1,7 @@
 // Buildings.js
 
+import React from "react";
+
 const Buildings = () => {
   return (
     <div>
