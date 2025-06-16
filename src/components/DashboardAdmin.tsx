@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient.ts'; // Make sure this is correc
 import {
   FaHome, FaBuilding, FaClipboardList, FaBook, FaUserGraduate,
   FaChalkboardTeacher, FaCalendarAlt, FaDoorOpen, FaUser,
-  FaUsers, FaSignOutAlt, FaBookOpen, FaCalendarDay, FaUsersCog
+  FaUsers, FaSignOutAlt, FaBookOpen, FaCalendarDay
 } from 'react-icons/fa';
 import '../styles/dashboardFaculty.css';
 import Colleges from '../components/Colleges.tsx';
