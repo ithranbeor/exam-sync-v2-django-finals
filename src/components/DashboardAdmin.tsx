@@ -228,10 +228,10 @@ const DashboardAdmin = () => {
             <div className="card faculty-info-card">
               <img
                 src="./src/assets/ba.png"
-                alt={`${user.first_name} ${user.last_name}`}
+                alt={`${user.first_name} ${user.middle_name} ${user.last_name}`}
                 className="faculty-avatar"
               />
-              <h4>{user.first_name} {user.last_name}</h4>
+              <h4>{user.first_name} {user.middle_name} {user.last_name}</h4>
               <p>{roles.length ? roles.join(', ') : 'Loading role(s)...'}</p>
             </div>
 
@@ -262,7 +262,7 @@ const DashboardAdmin = () => {
           {activeMenu === 'buildings' && <Buildings />}
           {activeMenu === 'rooms' && <Rooms />}
           {activeMenu === 'exam-period' && <ExamPeriod />}
-          {activeMenu === 'accounts' && <Accounts />}
+          {activeMenu === 'accounts' && <Accounts user={user}/>}
           {activeMenu === 'roles-permission' && <RolesPermission />}
           {activeMenu === 'profile' && <Profile />}
         </main>

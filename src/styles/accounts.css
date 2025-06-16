@@ -1,6 +1,6 @@
-/* src/styles/colleges.css */
+/* src/styles/accounts.css */
 
-.colleges-container {
+.accounts-container {
   padding: 20px;
   font-family: Arial, sans-serif;
   background-color: #f5f5f5;
@@ -9,27 +9,17 @@
   flex-direction: column;
 }
 
-.colleges-header {
+.accounts-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
 
-.colleges-title {
+.accounts-title {
   font-size: 24px;
   color: #333;
   margin: 0;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  border: 1px solid #FAB417;
-  border-radius: 5px;
-  overflow: hidden;
-  background-color: #8d6715;
-  box-shadow: 0 1px 2px rgba(205, 16, 16, 0.05);
 }
 
 .search-bar input {
@@ -40,6 +30,7 @@
   width: 250px;
   background: transparent;
   color: #333;
+  gap: 10px;
 }
 
 .search-bar .search-button {
@@ -55,8 +46,7 @@
   background-color: #f0f0f0;
 }
 
-
-.colleges-actions {
+.accounts-actions {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
@@ -69,16 +59,16 @@
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.1s ease;
-  color: white; 
+  color: white;
   font-weight: bold;
 }
 
 .action-button:active {
-    transform: translateY(1px);
+  transform: translateY(1px);
 }
 
 .action-button.add-new {
-  background-color: #ffb800; 
+  background-color: #ffb800;
 }
 
 .action-button.add-new:hover {
@@ -93,20 +83,20 @@
   background-color: #e6a700;
 }
 
-.colleges-table-container {
+.accounts-table-container {
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.colleges-table {
+.accounts-table {
   width: 100%;
   border-collapse: collapse;
   color: #333;
 }
 
-.colleges-table th {
+.accounts-table th {
   padding: 12px 15px;
   text-align: left;
   background-color: #333d52;
@@ -114,31 +104,28 @@
   font-weight: bold;
   border-bottom: 2px solid #092C4C;
 }
-.colleges-table td {
+
+.accounts-table td {
   padding: 12px 15px;
   border-bottom: 1px solid #eee;
   text-align: left;
 }
 
-.colleges-table thead {
+.accounts-table thead {
   background-color: #333d52;
   color: white;
 }
 
-.colleges-table th:first-child {
-  width: 50px;
-  text-align: LEFT;
+.accounts-table th:first-child,
+.accounts-table td:first-child {
+  text-align: left;
 }
 
-.colleges-table td:first-child {
-    text-align: left;
-}
-
-.colleges-table tbody tr:nth-child(even) {
+.accounts-table tbody tr:nth-child(even) {
   background-color: #f8f8f8;
 }
 
-.colleges-table tbody tr:hover {
+.accounts-table tbody tr:hover {
   background-color: #f0f0f0;
 }
 
@@ -160,7 +147,7 @@
 }
 
 .icon-button:active {
-    transform: translateY(1px);
+  transform: translateY(1px);
 }
 
 .icon-button.delete-button {
@@ -180,10 +167,10 @@
 }
 
 .no-data-message {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-    font-style: italic;
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
 }
 
 .save-changes-footer {
@@ -193,7 +180,7 @@
 }
 
 .action-button.save-changes {
-  background-color: #ffb800; 
+  background-color: #ffb800;
   padding: 12px 25px;
   font-size: 16px;
   font-weight: bold;
@@ -218,37 +205,16 @@
 
 .modal {
   background: #fff;
-  padding: 20px;
-  width: 400px;
-  border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  padding: 24px;
+  width: 420px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
-.modal input,
-.modal textarea {
-  width: 95%;
-  padding: 8px;
-  font-size: 14px;
-  border: 2px solid #092C4C;
-  background-color: transparent;
-  border-radius: 5px;
-  color: black;
-}
-
-.modal select {
-  width: 100%;
-  padding: 8px;
-  font-size: 14px;
-  border: 2px solid #092C4C;
-  background-color: transparent;
-  border-radius: 5px;
-  color: black;
-}
-
-h3 {
+.modal h4 {
   margin: 0;
   font-size: 20px;
   color: #ffb800;
@@ -260,20 +226,11 @@ h3 {
   min-height: 80px;
 }
 
-.modal-actions {
+.modal-actions,
+.modal-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-}
-
-.modal-actions button {
-  gap: 10px;
-  background-color: rgb(6, 5, 64);
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 16px;
 }
 
 .modal-button {
@@ -285,22 +242,62 @@ h3 {
   transition: background-color 0.3s ease;
 }
 
-.modal-button.save {
+.modal-button.save,
+.modal-button.download {
   background-color: #9f760c;
   color: white;
 }
 
-.modal-button.save:hover {
+.modal-button.save:hover,
+.modal-button.download:hover {
   background-color: #e6a700;
 }
 
 .modal-button.cancel {
   background-color: #092C4C;
-  color: black;
   color: white;
 }
 
 .modal-button.cancel:hover {
   background-color: #193e60;
 }
+.modal-content button {
+    gap: 10px;
+    background-color: rgb(6, 5, 64);
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+    align-items: right;
+}
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f7f7f7;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
 
+.checkbox-group label {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.checkbox-group .checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.checkbox-group input[type="checkbox"] {
+  accent-color: #ffb800;
+  width: 16px;
+  height: 16px;
+}
