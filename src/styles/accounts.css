@@ -301,3 +301,14 @@
   width: 16px;
   height: 16px;
 }
+.reactivate-button {
+  color: #007bff;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 6px;
+}
+.reactivate-button:hover {
+  color: #0056b3;
+}

@@ -34,6 +34,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [newAccount, setNewAccount] = useState({
     user_id: '',
@@ -44,7 +45,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
     email_address: '',
     contact_number: '',
     status: 'Active',
-    role_id: [] as string[], // multiple roles
+    role_id: [] as string[],
   });
 
   useEffect(() => {
@@ -77,6 +78,20 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
 
   const handleSearchChange = (e: any) => setSearchTerm(e.target.value);
 
+  const handleArchive = async (userId: string) => {
+    const { error } = await supabase
+      .from('tbl_users')
+      .update({ status: 'Suspended' })
+      .eq('user_id', userId);
+
+    if (error) toast.error('Failed to suspend account');
+    else {
+      toast.success('Account suspended');
+      fetchAccounts();
+    }
+  };
+
+
   const handleAddAccount = () => {
     setNewAccount({
       user_id: '',
@@ -105,49 +120,78 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
       middle_name,
     } = newAccount;
 
-    if (!user_id || !username || !first_name || !last_name || !email_address || role_id.length === 0)
+    if (!user_id || !username || !first_name || !last_name || !email_address || role_id.length === 0) {
       return toast.error('Please fill all required fields');
+    }
 
-    const default_password = `${user_id}@${last_name}`;
+    try {
+      if (isEditing) {
+        const { error: updateError } = await supabase
+          .from('tbl_users')
+          .update({
+            username,
+            first_name,
+            last_name,
+            middle_name,
+            email_address,
+            contact_number,
+            status,
+          })
+          .eq('user_id', user_id);
 
-    const { data, error } = await supabase
-      .from('tbl_users')
-      .insert([
-        {
-          user_id,
-          username,
-          first_name,
-          last_name,
-          middle_name,
-          email_address,
-          contact_number,
-          status,
-          password: default_password,
-        },
-      ])
-      .select()
-      .single();
+        if (updateError) {
+          toast.error('Failed to update user');
+          return;
+        }
 
-    if (error || !data) return toast.error('Error creating account');
+        await supabase.from('tbl_user_roles').delete().eq('user_id', user_id);
+        const { error: roleError } = await supabase
+          .from('tbl_user_roles')
+          .insert(role_id.map(rid => ({ user_id, role_id: rid })));
 
-    const roleInserts = role_id.map((rid) => ({ user_id: data.user_id, role_id: rid }));
-    const { error: roleError } = await supabase.from('tbl_user_roles').insert(roleInserts);
+        if (roleError) {
+          toast.error('Updated user but failed role assignment');
+          return;
+        }
 
-    if (roleError) {
-      toast.error('Account created, but role assignment failed');
-    } else {
-      toast.success('Account added successfully');
+        toast.success('Account updated');
+      } else {
+        const default_password = `${user_id}@${last_name}`;
+        const response = await fetch('https://kfpgokxyjpyupyzsbzcd.supabase.co/functions/v1/create-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            user_id,
+            username,
+            first_name,
+            last_name,
+            ...(middle_name && { middle_name }),
+            email_address,
+            contact_number,
+            status,
+            password: default_password,
+            role_ids: role_id,
+          }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          console.error(result);
+          return toast.error(result.message || 'Error creating account');
+        }
+
+        toast.success('Account created!');
+      }
+
       fetchAccounts();
       setShowModal(false);
-    }
-  };
-
-  const handleDelete = async (userId: string) => {
-    const { error } = await supabase.from('tbl_users').delete().eq('user_id', userId);
-    if (error) toast.error('Failed to delete account');
-    else {
-      toast.success('Deleted account');
-      setAccounts(accounts.filter(a => a.user_id !== userId));
+      setIsEditing(false);
+    } catch (err) {
+      console.error(err);
+      toast.error('Unexpected error');
     }
   };
 
@@ -181,8 +225,21 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
     XLSX.writeFile(wb, 'Accounts_Import_Template.xlsx');
   };
 
+  const handleReactivateAccount = async (userId: string) => {
+    const { error } = await supabase
+      .from('tbl_users')
+      .update({ status: 'Active' })
+      .eq('user_id', userId);
+
+    if (error) toast.error('Failed to reactivate account');
+    else {
+      toast.success('Account reactivated');
+      fetchAccounts();
+    }
+  };
+
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -207,7 +264,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
         } = row;
 
         if (!user_id || !username || !first_name || !last_name || !email_address || !contact_number || !status || !role_name) {
-          toast.error('Missing required field in row');
+          toast.error(`Missing fields for ${username || user_id}`);
           continue;
         }
 
@@ -217,49 +274,56 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
           .filter((id: string | undefined): id is string => Boolean(id));
 
         if (roleIds.length === 0) {
-          toast.error(`Roles not found: ${role_name}`);
+          toast.error(`Invalid role(s) for ${username}`);
           continue;
         }
 
         const default_password = `${user_id}@${last_name}`;
 
-        const { data, error } = await supabase
-          .from('tbl_users')
-          .insert([
-            {
+        try {
+          const response = await fetch('https://kfpgokxyjpyupyzsbzcd.supabase.co/functions/v1/create-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
               user_id,
               username,
               first_name,
               last_name,
-              middle_name,
+              ...(middle_name && { middle_name }),
               email_address,
               contact_number,
               status,
               password: default_password,
-            },
-          ])
-          .select()
-          .single();
+              role_ids: roleIds,
+            }),
+          });
 
-        if (error || !data) {
-          toast.error(`Failed creating user ${username}`);
+          const result = await response.json();
+
+          if (!response.ok) {
+            console.error(result);
+            toast.error(`Failed to create ${username}: ${result.message}`);
+            continue;
+          }
+
+        } catch (err) {
+          console.error(err);
+          toast.error(`Unexpected error creating ${username}`);
           continue;
         }
-
-        const { error: roleErr } = await supabase
-          .from('tbl_user_roles')
-          .insert(roleIds.map((rid: string) => ({ user_id: data.user_id, role_id: rid })));
-
-        if (roleErr) toast.error(`Created user but failed role assign for ${username}`);
       }
 
-      toast.success('Import complete');
+      toast.success('Import completed');
       fetchAccounts();
       setShowImport(false);
     };
 
     reader.readAsArrayBuffer(file);
   };
+
 
   const filtered = accounts.filter(u =>
     `${u.first_name} ${u.last_name} ${u.middle_name ?? ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -309,11 +373,74 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
                 <td>{u.username}</td>
                 <td>{u.email_address}</td>
                 <td>{u.contact_number}</td>
-                <td>{u.status}</td>
+                <td>
+                  <span
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '8px',
+                      backgroundColor:
+                        u.status === 'Active' ? '#d4edda' :
+                        u.status === 'Inactive' ? '#ffeeba' :
+                        u.status === 'Suspended' ? '#f8d7da' :
+                        '#e2e3e5',
+                      color:
+                        u.status === 'Suspended' ? '#721c24' :
+                        u.status === 'Inactive' ? '#856404' :
+                        u.status === 'Active' ? '#155724' :
+                        '#383d41',
+                      fontWeight: 'bold',
+                      fontSize: '12px',
+                    }}
+                  >
+                    {u.status}
+                  </span>
+                </td>
                 <td>{u.role}</td>
                 <td className="action-buttons">
-                  <button type="button" className="icon-button edit-button" onClick={() => toast.info('Edit coming soon')}><FaEdit /></button>
-                  <button type="button" className="icon-button delete-button" onClick={() => handleDelete(u.user_id)}><FaTrash /></button>
+                  <button
+                  type="button"
+                  className="icon-button edit-button"
+                  onClick={() => {
+                    setNewAccount({
+                      user_id: u.user_id,
+                      username: u.username || '',
+                      first_name: u.first_name,
+                      last_name: u.last_name,
+                      middle_name: u.middle_name || '',
+                      email_address: u.email_address || '',
+                      contact_number: u.contact_number || '',
+                      status: u.status,
+                      role_id: roles
+                        .filter(r => u.role.includes(r.role_name)) // match roles by name
+                        .map(r => r.role_id),
+                    });
+                    setIsEditing(true);
+                    setShowModal(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+
+
+                  {u.status === 'Suspended' ? (
+                    <button
+                      type="button"
+                      className="icon-button reactivate-button"
+                      onClick={() => handleReactivateAccount(u.user_id)}
+                      title="Reactivate Account"
+                    >
+                      🔁
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="icon-button delete-button"
+                      onClick={() => handleArchive(u.user_id)}
+                      title="Suspend Account"
+                    >
+                      <FaTrash />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

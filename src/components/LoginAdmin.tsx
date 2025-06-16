@@ -1,6 +1,7 @@
+// deno-lint-ignore-file no-explicit-any
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient.ts';
 import '../styles/loginAdmin.css';
 
 const getGreeting = () => {
@@ -29,6 +30,7 @@ const LoginFaculty: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    // Step 1: Get email using user ID
     const { data: userData, error: lookupError } = await supabase
       .from('tbl_users')
       .select('email_address')
@@ -40,6 +42,7 @@ const LoginFaculty: React.FC = () => {
       return;
     }
 
+    // Step 2: Attempt sign-in using Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: userData.email_address,
       password,
@@ -50,6 +53,7 @@ const LoginFaculty: React.FC = () => {
       return;
     }
 
+    // Step 3: Fetch full user data to check status
     const { data: fullUser, error: userFetchError } = await supabase
       .from('tbl_users')
       .select('*')
@@ -61,6 +65,14 @@ const LoginFaculty: React.FC = () => {
       return;
     }
 
+    // ❌ Check if account is suspended
+    if (fullUser.status?.toLowerCase() === 'suspended') {
+      setError('Your account has been suspended.');
+      await supabase.auth.signOut(); // Sign out immediately
+      return;
+    }
+
+    // Step 4: Check for admin role
     const { data: rolesData, error: rolesError } = await supabase
       .from('tbl_user_roles')
       .select('role_id, roles:tbl_roles(role_name)')
@@ -78,6 +90,7 @@ const LoginFaculty: React.FC = () => {
       return;
     }
 
+    // Step 5: Store user and navigate
     if (rememberMe) {
       localStorage.setItem('user', JSON.stringify(fullUser));
     } else {
@@ -86,6 +99,7 @@ const LoginFaculty: React.FC = () => {
 
     navigate('/admin-dashboard');
   };
+
 
   return (
     <div className="main-container">

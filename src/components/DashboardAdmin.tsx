@@ -17,7 +17,6 @@ import Buildings from '../components/Buildings.tsx';
 import Rooms from '../components/Rooms.tsx'; 
 import ExamPeriod from '../components/ExamPeriod.tsx'; 
 import Accounts from '../components/Accounts.tsx'; 
-import RolesPermission from '../components/RolesPermission.tsx'; 
 import Profile from '../components/Profile.tsx';
 
 const iconStyle = { className: 'icon', size: 20 };
@@ -178,12 +177,6 @@ const DashboardAdmin = () => {
                   {isSidebarOpen && <span>Accounts</span>}
                 </button>
               </li>
-              <li className={activeMenu === 'roles-permission' ? 'active' : ''}>
-                <button type="button" onClick={() => setActiveMenu('roles-permission')}>
-                  <FaUsersCog {...iconStyle} />
-                  {isSidebarOpen && <span>Roles & Permission</span>}
-                </button>
-              </li>
               <div className="sidebar-divider"></div>
               <li className={activeMenu === 'profile' ? 'active' : ''}>
                 <button type="button" onClick={() => setActiveMenu('profile')}>
@@ -264,7 +257,6 @@ const DashboardAdmin = () => {
           {activeMenu === 'rooms' && <Rooms />}
           {activeMenu === 'exam-period' && <ExamPeriod />}
           {activeMenu === 'accounts' && <Accounts user={user}/>}
-          {activeMenu === 'roles-permission' && <RolesPermission />}
           {activeMenu === 'profile' && <Profile />}
         </main>
       </div>
