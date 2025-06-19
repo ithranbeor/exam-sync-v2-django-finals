@@ -1,6 +1,7 @@
+// deno-lint-ignore-file
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient.ts'; // Make sure this is correctly set
+import { supabase } from '../lib/supabaseClient.ts';
 import {
   FaHome, FaBuilding, FaClipboardList, FaBook, FaUserGraduate,
   FaChalkboardTeacher, FaCalendarAlt, FaDoorOpen, FaUser,

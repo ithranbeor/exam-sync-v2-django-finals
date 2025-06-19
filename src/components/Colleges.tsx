@@ -1,6 +1,7 @@
+// deno-lint-ignore-file no-explicit-any require-await
 import React, { useState, useEffect } from 'react';
 import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient.ts';
 import { ToastContainer, toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 import 'react-toastify/dist/ReactToastify.css';
@@ -206,17 +207,17 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
             value={searchTerm}
             onChange={handleSearchChange}
           />
-          <button className="search-button">
+          <button type="button" className="search-button">
             <FaSearch />
           </button>
         </div>
       </div>
 
       <div className="colleges-actions">
-        <button className="action-button add-new" onClick={handleAddCollege}>
+        <button type="button" className="action-button add-new" onClick={handleAddCollege}>
           Add New College
         </button>
-        <button className="action-button import" onClick={() => setShowImport(true)}>
+        <button type="button" className="action-button import" onClick={() => setShowImport(true)}>
           Import Colleges
         </button>
       </div>
@@ -241,7 +242,7 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
                   <td>{college.name}</td>
                   <td>{college.dean_name}</td>
                   <td className="action-buttons">
-                    <button className="icon-button edit-button" onClick={() => {
+                    <button type="button" className="icon-button edit-button" onClick={() => {
                       setNewCollegeName(college.name);
                       const dean = deans.find(d => d.full_name === college.dean_name);
                       setSelectedDeanId(dean?.user_id ?? null);
@@ -251,7 +252,7 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
                     }}>
                       <FaEdit />
                     </button>
-                    <button className="icon-button delete-button" onClick={() => handleDelete(college.college_id)}>
+                    <button type="button" className="icon-button delete-button" onClick={() => handleDelete(college.college_id)}>
                       <FaTrash />
                     </button>
                   </td>
@@ -266,29 +267,42 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>{editMode ? 'Edit College' : 'Add New College'}</h3>
-            <input
-              type="text"
-              placeholder="College Name"
-              value={newCollegeName}
-              onChange={(e) => setNewCollegeName(e.target.value)}
-            />
-            <select
-              value={selectedDeanId ?? ''}
-              onChange={(e) => setSelectedDeanId(Number(e.target.value))}
-            >
-              <option value="">Select Dean</option>
-              {deans.map((dean) => (
-                <option key={dean.user_id} value={dean.user_id}>
-                  {dean.full_name}
-                </option>
-              ))}
-            </select>
+            <h3 style={{ textAlign: 'center' }}>
+              {editMode ? 'Edit College' : 'Add New College'}
+            </h3>
+
+            <div className="input-group">
+              <label htmlFor="college-name">College Name</label>
+              <input
+                id="college-name"
+                type="text"
+                placeholder="College Name"
+                value={newCollegeName}
+                onChange={(e) => setNewCollegeName(e.target.value)}
+              />
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="dean-select">Assign Dean</label>
+              <select
+                id="dean-select"
+                value={selectedDeanId ?? ''}
+                onChange={(e) => setSelectedDeanId(Number(e.target.value))}
+              >
+                <option value="">Select Dean</option>
+                {deans.map((dean) => (
+                  <option key={dean.user_id} value={dean.user_id}>
+                    {dean.full_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="modal-actions">
-              <button onClick={handleModalSubmit} disabled={isSubmitting}>
+              <button type="button" onClick={handleModalSubmit} disabled={isSubmitting}>
                 {isSubmitting ? 'Saving...' : 'Save'}
               </button>
-              <button onClick={() => setShowModal(false)}>Cancel</button>
+              <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
             </div>
           </div>
         </div>
@@ -301,8 +315,8 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
             <h3>Import Colleges</h3>
             <input type="file" accept=".xlsx, .xls" onChange={handleImportFile} />
             <div className="modal-actions">
-              <button onClick={() => setShowImport(false)}>Done</button>
-              <button onClick={() => setShowImport(false)}>Cancel</button>
+              <button type="button" onClick={() => setShowImport(false)}>Done</button>
+              <button type="button" onClick={() => setShowImport(false)}>Cancel</button>
             </div>
           </div>
         </div>

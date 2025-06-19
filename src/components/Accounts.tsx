@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import React, { useEffect, useState } from 'react';
-import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaSearch, FaRedoAlt  } from 'react-icons/fa';
 import { supabase } from '../lib/supabaseClient.ts';
 import { ToastContainer, toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
@@ -326,7 +326,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
 
 
   const filtered = accounts.filter(u =>
-    `${u.first_name} ${u.last_name} ${u.middle_name ?? ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    `${u.user_id} ${u.first_name} ${u.last_name} ${u.middle_name ?? ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.username ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.email_address ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.contact_number ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -355,7 +355,6 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
             <tr>
               <th>User ID</th>
               <th>Full Name</th>
-              <th>Username</th>
               <th>Email</th>
               <th>Contact</th>
               <th>Status</th>
@@ -370,7 +369,6 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
               <tr key={u.user_id}>
                 <td>{u.user_id}</td>
                 <td>{u.last_name}, {u.first_name} {u.middle_name ?? ''}</td>
-                <td>{u.username}</td>
                 <td>{u.email_address}</td>
                 <td>{u.contact_number}</td>
                 <td>
@@ -428,8 +426,9 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
                       className="icon-button reactivate-button"
                       onClick={() => handleReactivateAccount(u.user_id)}
                       title="Reactivate Account"
+                      style={{ color: 'green' }}
                     >
-                      🔁
+                      <FaRedoAlt />
                     </button>
                   ) : (
                     <button
@@ -452,23 +451,21 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
         <div className="modal-overlay">
           <div className="modal">
             <div className="modal-content">
-              <h4>Add New Account</h4>
-              {['user_id', 'username', 'first_name', 'last_name', 'middle_name', 'email_address', 'contact_number'].map(k => (
-                <input
-                  key={k}
-                  placeholder={k.replace('_', ' ').toUpperCase()}
-                  value={(newAccount as any)[k]}
-                  onChange={e => setNewAccount(prev => ({ ...prev, [k]: e.target.value }))}
-                />
-              ))}
+              <h4 style={{ textAlign: 'center' }}>Update Account</h4>
 
-              <select
-                value={newAccount.status}
-                onChange={e => setNewAccount(prev => ({ ...prev, status: e.target.value }))}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
+              {['user_id', 'first_name', 'last_name', 'middle_name', 'email_address', 'contact_number'].map((k) => (
+                <div key={k} className="input-group">
+                  <label htmlFor={k}>
+                    {k.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </label>
+                  <input
+                    id={k}
+                    placeholder={k.replace('_', ' ').toUpperCase()}
+                    value={(newAccount as any)[k]}
+                    onChange={(e) => setNewAccount((prev) => ({ ...prev, [k]: e.target.value }))}
+                  />
+                </div>
+              ))}
 
               <div className="checkbox-group">
                 <label>Assign Roles:</label>
@@ -492,9 +489,14 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
                 ))}
               </div>
 
-
-              <button type="button" onClick={handleSaveAccount}>Save</button>
-              <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
+              <div className="modal-buttons">
+                <button type="button" className="modal-button save" onClick={handleSaveAccount}>
+                  Save
+                </button>
+                <button type="button" className="modal-button cancel" onClick={() => setShowModal(false)}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -504,12 +506,25 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
         <div className="modal-overlay">
           <div className="modal">
             <div className="modal-content">
-              <h4>Import Accounts from Excel</h4>
-              <button type="button" className="modal-button download" onClick={downloadTemplate}>Download Template</button>
-              <input type="file" accept=".xlsx, .xls" onChange={handleImport} />
-              <div className="modal-buttons">
-                <button type="button" onClick={() => setShowImport(false)}>Done</button>
-                <button type="button" onClick={() => setShowImport(false)}>Cancel</button>
+              <div className="modal-content import-modal">
+                <h4 style={{ textAlign: 'center' }}>Import Accounts from Excel</h4>
+
+                <div className="input-group">
+                  <label htmlFor="file-upload">Upload Excel File</label>
+                  <input id="file-upload" type="file" accept=".xlsx, .xls" onChange={handleImport} />
+                </div>
+
+                <div className="modal-buttons">
+                  <button type="button" className="modal-button download" onClick={downloadTemplate}>
+                    📥 Download Template
+                  </button>
+                  <button type="button" className="modal-button save" onClick={() => setShowImport(false)}>
+                    Done
+                  </button>
+                  <button type="button" className="modal-button cancel" onClick={() => setShowImport(false)}>
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
