@@ -1,6 +1,6 @@
-// deno-lint-ignore-file no-explicit-any require-await
+// deno-lint-ignore-file no-explicit-any
 import React, { useState, useEffect } from 'react';
-import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaSearch, FaDownload } from 'react-icons/fa';
 import { supabase } from '../lib/supabaseClient.ts';
 import { ToastContainer, toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
@@ -8,18 +8,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import '../styles/colleges.css';
 
 interface College {
-  college_id: number;
-  name: string;
-  dean_name?: string;
+  college_id: string;
+  college_name: string;
 }
 
 interface User {
   user_id: string;
-}
-
-interface Dean {
-  user_id: number;
-  full_name: string;
 }
 
 interface CollegesProps {
@@ -31,73 +25,51 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [newCollegeId, setNewCollegeId] = useState<string>('');
   const [newCollegeName, setNewCollegeName] = useState('');
-  const [selectedDeanId, setSelectedDeanId] = useState<number | null>(null);
-  const [deans, setDeans] = useState<Dean[]>([]);
   const [editMode, setEditMode] = useState(false);
-  const [editingCollegeId, setEditingCollegeId] = useState<number | null>(null);
+  const [editingCollegeId, setEditingCollegeId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchColleges();
-    fetchDeans();
   }, []);
 
   const fetchColleges = async () => {
     const { data, error } = await supabase
       .from('tbl_college')
-      .select(`college_id, college_name, dean:tbl_users(first_name, last_name)`);
+      .select('college_id, college_name');
 
-    if (error || !data) {
-      console.error('Error fetching colleges:', error?.message);
-      return;
+    if (error) {
+      console.error('Error fetching colleges:', error.message);
+      toast.error('Failed to fetch colleges.');
+    } else {
+      setColleges(data);
     }
-
-    const formatted = data.map((item: any) => ({
-      college_id: item.college_id,
-      name: item.college_name,
-      dean_name: item.dean ? `${item.dean.first_name} ${item.dean.last_name}` : 'N/A',
-    }));
-    setColleges(formatted);
-  };
-
-  const fetchDeans = async () => {
-    const { data, error } = await supabase
-      .from('tbl_user_roles')
-      .select(`user_id, tbl_users(first_name, last_name)`)
-      .eq('role_id', 1); // Role ID for Dean
-
-    if (error || !data) {
-      console.error('Error fetching deans:', error?.message);
-      return;
-    }
-
-    const formatted = data.map((item: any) => ({
-      user_id: item.user_id,
-      full_name: `${item.tbl_users.first_name} ${item.tbl_users.last_name}`,
-    }));
-    setDeans(formatted);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
+  const filteredColleges = colleges.filter((college) =>
+    college.college_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    college.college_id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const handleAddCollege = () => {
+    setNewCollegeId('');
     setNewCollegeName('');
-    setSelectedDeanId(null);
     setEditMode(false);
     setEditingCollegeId(null);
     setShowModal(true);
   };
 
   const handleModalSubmit = async () => {
-    if (!newCollegeName.trim() || selectedDeanId === null) {
-      toast.error('Please provide a college name and select a dean.');
+    if (!newCollegeId.trim() || !newCollegeName.trim()) {
+      toast.error('Please enter both College ID and Name.');
       return;
     }
-
-    if (isSubmitting) return; // Prevent double submission
 
     setIsSubmitting(true);
 
@@ -105,51 +77,49 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
       if (editMode && editingCollegeId !== null) {
         const { error } = await supabase
           .from('tbl_college')
-          .update({ college_name: newCollegeName, user_id: selectedDeanId })
+          .update({
+            college_id: newCollegeId,
+            college_name: newCollegeName,
+          })
           .eq('college_id', editingCollegeId);
 
         if (error) {
           toast.error('Failed to update college.');
         } else {
-          toast.success('College updated successfully!');
+          toast.success('College updated.');
           fetchColleges();
         }
       } else {
         const { error } = await supabase
           .from('tbl_college')
-          .insert([{ college_name: newCollegeName, user_id: selectedDeanId }]);
+          .insert([{ college_id: newCollegeId, college_name: newCollegeName }]);
 
         if (error) {
           toast.error('Failed to add college.');
         } else {
-          toast.success('College added successfully!');
+          toast.success('College added.');
           fetchColleges();
         }
       }
 
       setShowModal(false);
-      setNewCollegeName('');
-      setSelectedDeanId(null);
-      setEditMode(false);
-      setEditingCollegeId(null);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     const { error } = await supabase.from('tbl_college').delete().eq('college_id', id);
 
     if (error) {
       toast.error('Failed to delete college.');
     } else {
       setColleges(colleges.filter((c) => c.college_id !== id));
-      toast.success('College deleted successfully!');
+      toast.success('College deleted.');
     }
   };
 
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -162,24 +132,17 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
       const json: any[] = XLSX.utils.sheet_to_json(worksheet);
 
       for (const row of json) {
+        const collegeId = String(row['College ID']).trim();
         const collegeName = row['College Name']?.trim();
-        const deanName = row['Dean Name']?.trim();
-
-        if (!collegeName || !deanName) continue;
-
-        const dean = deans.find(d => d.full_name.toLowerCase() === deanName.toLowerCase());
-        if (!dean) {
-          toast.error(`Dean not found: ${deanName}`);
-          continue;
-        }
+        if (!collegeId || !collegeName) continue;
 
         const { error } = await supabase
           .from('tbl_college')
-          .insert([{ college_name: collegeName, user_id: dean.user_id }]);
+          .insert([{ college_id: collegeId, college_name: collegeName }]);
 
         if (error) {
-          console.error('Error importing college:', error.message);
-          toast.error(`Failed to import ${collegeName}`);
+          console.error('Import error:', error.message);
+          toast.error(`Failed to import: ${collegeName}`);
         }
       }
 
@@ -191,10 +154,16 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
     reader.readAsArrayBuffer(file);
   };
 
-  const filteredColleges = colleges.filter((college) =>
-    college.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (college.dean_name?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const downloadTemplate = () => {
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ['College ID', 'College Name'],
+      ['CITC', 'College of Information Technology and Computing'],
+      ['CSM', 'College of Science and Mathematics'],
+    ]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Colleges Template');
+    XLSX.writeFile(workbook, 'colleges_template.xlsx');
+  };
 
   return (
     <div className="colleges-container">
@@ -207,9 +176,7 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
             value={searchTerm}
             onChange={handleSearchChange}
           />
-          <button type="button" className="search-button">
-            <FaSearch />
-          </button>
+          <button type="button" className="search-button"><FaSearch /></button>
         </div>
       </div>
 
@@ -220,6 +187,9 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
         <button type="button" className="action-button import" onClick={() => setShowImport(true)}>
           Import Colleges
         </button>
+        <button type="button" className="action-button download" onClick={downloadTemplate}>
+          <FaDownload style={{ marginRight: 5 }} /> Download Template
+        </button>
       </div>
 
       <div className="colleges-table-container">
@@ -227,8 +197,8 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
           <thead>
             <tr>
               <th>#</th>
+              <th>College ID</th>
               <th>College Name</th>
-              <th>Dean</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -239,20 +209,25 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
               filteredColleges.map((college, index) => (
                 <tr key={college.college_id}>
                   <td>{index + 1}</td>
-                  <td>{college.name}</td>
-                  <td>{college.dean_name}</td>
+                  <td>{college.college_id}</td>
+                  <td>{college.college_name}</td>
                   <td className="action-buttons">
-                    <button type="button" className="icon-button edit-button" onClick={() => {
-                      setNewCollegeName(college.name);
-                      const dean = deans.find(d => d.full_name === college.dean_name);
-                      setSelectedDeanId(dean?.user_id ?? null);
-                      setEditingCollegeId(college.college_id);
-                      setEditMode(true);
-                      setShowModal(true);
-                    }}>
+                    <button type="button"
+                      className="icon-button edit-button"
+                      onClick={() => {
+                        setNewCollegeId(college.college_id);
+                        setNewCollegeName(college.college_name);
+                        setEditMode(true);
+                        setEditingCollegeId(college.college_id);
+                        setShowModal(true);
+                      }}
+                    >
                       <FaEdit />
                     </button>
-                    <button type="button" className="icon-button delete-button" onClick={() => handleDelete(college.college_id)}>
+                    <button type="button"
+                      className="icon-button delete-button"
+                      onClick={() => handleDelete(college.college_id)}
+                    >
                       <FaTrash />
                     </button>
                   </td>
@@ -263,13 +238,25 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
         </table>
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Modal for Add/Edit */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
             <h3 style={{ textAlign: 'center' }}>
               {editMode ? 'Edit College' : 'Add New College'}
             </h3>
+
+            <div className="input-group">
+              <label htmlFor="college-id">College ID</label>
+              <input
+                id="college-id"
+                type="text"
+                placeholder="College ID"
+                value={newCollegeId}
+                onChange={(e) => setNewCollegeId(e.target.value)}
+                disabled={editMode}
+              />
+            </div>
 
             <div className="input-group">
               <label htmlFor="college-name">College Name</label>
@@ -280,22 +267,6 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
                 value={newCollegeName}
                 onChange={(e) => setNewCollegeName(e.target.value)}
               />
-            </div>
-
-            <div className="input-group">
-              <label htmlFor="dean-select">Assign Dean</label>
-              <select
-                id="dean-select"
-                value={selectedDeanId ?? ''}
-                onChange={(e) => setSelectedDeanId(Number(e.target.value))}
-              >
-                <option value="">Select Dean</option>
-                {deans.map((dean) => (
-                  <option key={dean.user_id} value={dean.user_id}>
-                    {dean.full_name}
-                  </option>
-                ))}
-              </select>
             </div>
 
             <div className="modal-actions">
@@ -312,7 +283,7 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
       {showImport && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Import Colleges</h3>
+            <h3 style={{ textAlign: 'center' }}>Import Colleges</h3>
             <input type="file" accept=".xlsx, .xls" onChange={handleImportFile} />
             <div className="modal-actions">
               <button type="button" onClick={() => setShowImport(false)}>Done</button>

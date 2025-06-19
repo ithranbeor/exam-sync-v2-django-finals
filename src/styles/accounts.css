@@ -22,10 +22,10 @@
   margin: 0;
 }
 
-.search-bar { /* Add this new rule for the search-bar container */
-  display: flex; /* Make it a flex container */
-  gap: 10px; /* Add gap between its direct children */
-  align-items: center; /* Vertically align items */
+.search-bar {
+  display: flex; 
+  gap: 10px;
+  align-items: center;
 }
 
 .search-bar input {
@@ -36,7 +36,6 @@
   width: 250px;
   background: transparent;
   color: #333;
-  /* Removed gap from here as it won't work on input directly */
 }
 
 .search-bar .search-button {

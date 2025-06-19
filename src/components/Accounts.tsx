@@ -377,12 +377,12 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
                       padding: '4px 8px',
                       borderRadius: '8px',
                       backgroundColor:
-                        u.status === 'Active' ? '#d4edda' :
+                        u.status === 'Active' ? '#16610E' :
                         u.status === 'Inactive' ? '#ffeeba' :
                         u.status === 'Suspended' ? '#f8d7da' :
                         '#e2e3e5',
                       color:
-                        u.status === 'Suspended' ? '#721c24' :
+                        u.status === 'Suspended' ? '#16610E' :
                         u.status === 'Inactive' ? '#856404' :
                         u.status === 'Active' ? '#155724' :
                         '#383d41',
