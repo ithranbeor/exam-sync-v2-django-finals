@@ -11,7 +11,7 @@ const getGreeting = () => {
   return 'Good evening';
 };
 
-const LoginFaculty: React.FC = () => {
+const LoginAdmin: React.FC = () => {
   const [greeting, setGreeting] = useState(getGreeting());
   const [id, setID] = useState('');
   const [password, setPassword] = useState('');
@@ -30,82 +30,89 @@ const LoginFaculty: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    // Step 1: Get email using user ID
-    const { data: userData, error: lookupError } = await supabase
-      .from('tbl_users')
-      .select('email_address')
-      .eq('user_id', id)
-      .single();
+    try {
+      // Step 1: Get user's email based on user ID
+      const { data: userRecord, error: userLookupError } = await supabase
+        .from('tbl_users')
+        .select('email_address, status')
+        .eq('user_id', id)
+        .single();
 
-    if (lookupError || !userData?.email_address) {
-      setError('Invalid user ID or password.');
-      return;
+      if (userLookupError || !userRecord?.email_address) {
+        setError('Invalid user ID or password.');
+        return;
+      }
+
+      // Step 2: Authenticate using Supabase Auth
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: userRecord.email_address,
+        password,
+      });
+
+      if (signInError || !authData.session) {
+        setError('Invalid user ID or password.');
+        return;
+      }
+
+      // Step 3: Fetch complete user profile
+      const { data: fullUser, error: profileError } = await supabase
+        .from('tbl_users')
+        .select('*')
+        .eq('user_id', id)
+        .single();
+
+      if (profileError || !fullUser) {
+        setError('Login succeeded, but failed to load user profile.');
+        return;
+      }
+
+      // Step 4: Check for suspended status
+      const { data: userRoles, error: userRolesError } = await supabase
+        .from('tbl_user_role')
+        .select('status, role_id, roles:tbl_roles(role_name)')
+        .eq('user_id', id);
+
+      if (userRolesError || !userRoles || userRoles.length === 0) {
+        setError('No roles found. Unauthorized access.');
+        return;
+      }
+
+      // Check if all roles are suspended
+      const allSuspended = userRoles.every((r: any) => r.status?.toLowerCase() === 'suspended');
+      if (allSuspended) {
+        setError('Your account has been suspended.');
+        await supabase.auth.signOut();
+        return;
+      }
+
+      // Step 5: Check if one of the roles is Admin
+      const isAdmin = userRoles.some((r: any) => r.roles?.role_name?.toLowerCase() === 'admin');
+      if (!isAdmin) {
+        setError('Access denied. Admins only.');
+        return;
+      }
+
+      // Step 6: Store session
+      if (rememberMe) {
+        localStorage.setItem('user', JSON.stringify(fullUser));
+      } else {
+        sessionStorage.setItem('user', JSON.stringify(fullUser));
+      }
+
+      // Step 7: Navigate to admin dashboard
+      navigate('/admin-dashboard');
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('An unexpected error occurred.');
     }
-
-    // Step 2: Attempt sign-in using Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: userData.email_address,
-      password,
-    });
-
-    if (authError || !authData.session) {
-      setError('Invalid user ID or password.');
-      return;
-    }
-
-    // Step 3: Fetch full user data to check status
-    const { data: fullUser, error: userFetchError } = await supabase
-      .from('tbl_users')
-      .select('*')
-      .eq('user_id', id)
-      .single();
-
-    if (userFetchError || !fullUser) {
-      setError('Login succeeded, but failed to fetch user details.');
-      return;
-    }
-
-    // ❌ Check if account is suspended
-    if (fullUser.status?.toLowerCase() === 'suspended') {
-      setError('Your account has been suspended.');
-      await supabase.auth.signOut(); // Sign out immediately
-      return;
-    }
-
-    // Step 4: Check for admin role
-    const { data: rolesData, error: rolesError } = await supabase
-      .from('tbl_user_roles')
-      .select('role_id, roles:tbl_roles(role_name)')
-      .eq('user_id', id);
-
-    if (rolesError || !rolesData || rolesData.length === 0) {
-      setError('Unauthorized access. No roles found.');
-      return;
-    }
-
-    const isAdmin = rolesData.some((r: any) => r.roles.role_name.toLowerCase() === 'admin');
-
-    if (!isAdmin) {
-      setError('Access denied. Admins only.');
-      return;
-    }
-
-    // Step 5: Store user and navigate
-    if (rememberMe) {
-      localStorage.setItem('user', JSON.stringify(fullUser));
-    } else {
-      sessionStorage.setItem('user', JSON.stringify(fullUser));
-    }
-
-    navigate('/admin-dashboard');
   };
-
 
   return (
     <div className="main-container">
       <div className="left-panel">
         <div className="e-graphic"></div>
       </div>
+
       <div className="right-panel">
         <div className="header-section">
           <div className="greeting">
@@ -121,6 +128,7 @@ const LoginFaculty: React.FC = () => {
           <h2>
             Login as <span className="faculty-text">Admin</span>
           </h2>
+
           <form className="login-form" onSubmit={handleLogin}>
             <div className="input-group">
               <label htmlFor="ID">User ID</label>
@@ -134,6 +142,7 @@ const LoginFaculty: React.FC = () => {
                 required
               />
             </div>
+
             <div className="input-group">
               <label htmlFor="password">Password</label>
               <input
@@ -146,6 +155,7 @@ const LoginFaculty: React.FC = () => {
                 required
               />
             </div>
+
             <div className="remember-me-container">
               <input
                 type="checkbox"
@@ -172,4 +182,4 @@ const LoginFaculty: React.FC = () => {
   );
 };
 
-export default LoginFaculty;
+export default LoginAdmin;
