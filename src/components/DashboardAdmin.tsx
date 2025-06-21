@@ -1,3 +1,4 @@
+// deno-lint-ignore-file jsx-button-has-type no-explicit-any
 // DashboardAdmin.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -32,15 +33,26 @@ const DashboardAdmin = () => {
   const [roles, setRoles] = useState<string[]>([]);
   const navigate = useNavigate();
 
+// In DashboardAdmin.tsx, when setting user:
   useEffect(() => {
-    const storedUser =
-      JSON.parse(localStorage.getItem('user') || 'null') ||
-      JSON.parse(sessionStorage.getItem('user') || 'null');
-    if (!storedUser) {
-      navigate('/');
-    } else {
-      setUser(storedUser);
-    }
+    const loadUser = async () => {
+      const stored = JSON.parse(localStorage.getItem('user') || 'null') ||
+                    JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (!stored) return navigate('/');
+      
+      const { data, error } = await supabase
+        .from('tbl_users')
+        .select('user_id, first_name, middle_name, last_name, avatar_url')
+        .eq('user_id', stored.user_id)
+        .single();
+
+      if (!error && data) {
+        setUser({ ...stored, avatar_url: data.avatar_url });
+      } else {
+        setUser(stored);
+      }
+    };
+    loadUser();
   }, [navigate]);
 
   useEffect(() => {
@@ -235,7 +247,11 @@ const DashboardAdmin = () => {
               </div>
 
               <div className="card faculty-info-card">
-                <img src="./src/assets/ba.png" alt="User avatar" className="faculty-avatar" />
+                <img
+                  src={user.avatar_url ?? './src/assets/ba.png'}
+                  alt="User avatar"
+                  className="faculty-avatar"
+                />
                 <h4>{user.first_name} {user.middle_name} {user.last_name}</h4>
                 <p>{roles.length ? roles.join(', ') : 'Loading role(s)...'}</p>
               </div>
@@ -270,7 +286,7 @@ const DashboardAdmin = () => {
           {activeMenu === 'exam-period' && <ExamPeriod />}
           {activeMenu === 'accounts' && <Accounts user={user} />}
           {activeMenu === 'role' && <Roles />}
-          {activeMenu === 'profile' && <Profile />}
+          {activeMenu === 'profile' && <Profile user={user}/>}
         </main>
       </div>
     </div>

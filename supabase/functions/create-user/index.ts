@@ -3,7 +3,6 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js';
 
 serve(async (req) => {
-  // CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
       headers: {
@@ -16,7 +15,6 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-
     const {
       user_id,
       first_name,
@@ -28,18 +26,13 @@ serve(async (req) => {
       password,
     } = body;
 
-    // Validate required fields
     if (
-      !user_id ||
-      !first_name ||
-      !last_name ||
-      !email_address ||
-      !contact_number ||
-      !status ||
-      !password
+      !user_id || isNaN(Number(user_id)) ||
+      !first_name || !last_name || !email_address ||
+      !contact_number || !status || !password
     ) {
       return new Response(
-        JSON.stringify({ message: 'Missing required fields' }),
+        JSON.stringify({ message: 'Missing or invalid required fields' }),
         {
           status: 400,
           headers: {
@@ -50,14 +43,13 @@ serve(async (req) => {
       );
     }
 
-    // Create Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // 1. Create user in Supabase Auth
-    const { data: _authData, error: authError } = await supabase.auth.admin.createUser({
+    // Create user in Supabase Auth
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: email_address,
       password,
       email_confirm: true,
@@ -77,24 +69,32 @@ serve(async (req) => {
       );
     }
 
-    // 2. Insert user metadata
+    const auth_user_id = authUser?.user?.id;
+
+    // Insert metadata into tbl_users
     const { error: insertError } = await supabase.from('tbl_users').insert([
       {
-        user_id,
+        user_id: Number(user_id),
         first_name,
         last_name,
         middle_name,
         email_address,
         contact_number,
         status,
-        password, // Only if you need to store plaintext (not recommended). Otherwise, remove this line.
       },
     ]);
 
+    // If metadata insert fails, remove the Auth user to prevent orphaned auth records
     if (insertError) {
       console.error('Insert Error:', insertError);
+
+      if (auth_user_id) {
+        await supabase.auth.admin.deleteUser(auth_user_id);
+        console.log(`Auth user ${auth_user_id} deleted due to insert failure.`);
+      }
+
       return new Response(
-        JSON.stringify({ message: 'Failed to insert into tbl_users', error: insertError.message }),
+        JSON.stringify({ message: 'Insert failed', error: insertError.message }),
         {
           status: 500,
           headers: {
@@ -120,9 +120,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         message: 'Unexpected error',
-        error: typeof err === 'object' && err !== null && 'message' in err
-          ? (err as { message: string }).message
-          : String(err),
+        error:
+          typeof err === 'object' && err !== null && 'message' in err
+            ? (err as { message: string }).message
+            : String(err),
       }),
       {
         status: 500,

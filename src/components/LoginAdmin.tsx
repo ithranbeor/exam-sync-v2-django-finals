@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient.ts';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import '../styles/loginAdmin.css';
 
 const getGreeting = () => {
@@ -15,6 +16,7 @@ const LoginAdmin: React.FC = () => {
   const [greeting, setGreeting] = useState(getGreeting());
   const [id, setID] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // 👁️ Show password
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -31,7 +33,6 @@ const LoginAdmin: React.FC = () => {
     setError('');
 
     try {
-      // Step 1: Get user's email based on user ID
       const { data: userRecord, error: userLookupError } = await supabase
         .from('tbl_users')
         .select('email_address, status')
@@ -43,7 +44,6 @@ const LoginAdmin: React.FC = () => {
         return;
       }
 
-      // Step 2: Authenticate using Supabase Auth
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: userRecord.email_address,
         password,
@@ -54,7 +54,6 @@ const LoginAdmin: React.FC = () => {
         return;
       }
 
-      // Step 3: Fetch complete user profile
       const { data: fullUser, error: profileError } = await supabase
         .from('tbl_users')
         .select('*')
@@ -66,7 +65,6 @@ const LoginAdmin: React.FC = () => {
         return;
       }
 
-      // Step 4: Check for suspended status
       const { data: userRoles, error: userRolesError } = await supabase
         .from('tbl_user_role')
         .select('status, role_id, roles:tbl_roles(role_name)')
@@ -77,7 +75,6 @@ const LoginAdmin: React.FC = () => {
         return;
       }
 
-      // Check if all roles are suspended
       const allSuspended = userRoles.every((r: any) => r.status?.toLowerCase() === 'suspended');
       if (allSuspended) {
         setError('Your account has been suspended.');
@@ -85,21 +82,18 @@ const LoginAdmin: React.FC = () => {
         return;
       }
 
-      // Step 5: Check if one of the roles is Admin
       const isAdmin = userRoles.some((r: any) => r.roles?.role_name?.toLowerCase() === 'admin');
       if (!isAdmin) {
         setError('Access denied. Admins only.');
         return;
       }
 
-      // Step 6: Store session
       if (rememberMe) {
         localStorage.setItem('user', JSON.stringify(fullUser));
       } else {
         sessionStorage.setItem('user', JSON.stringify(fullUser));
       }
 
-      // Step 7: Navigate to admin dashboard
       navigate('/admin-dashboard');
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -143,17 +137,25 @@ const LoginAdmin: React.FC = () => {
               />
             </div>
 
-            <div className="input-group">
+            <div className="input-group password-group">
               <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="login-input"
-                required
-              />
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="login-input"
+                  required
+                />
+                <span
+                  className="toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
             </div>
 
             <div className="remember-me-container">
@@ -168,9 +170,7 @@ const LoginAdmin: React.FC = () => {
 
             {error && <p className="error-text">{error}</p>}
 
-            <button type="submit" className="login-button">
-              Login
-            </button>
+            <button type="submit" className="login-button">Login</button>
           </form>
         </div>
 

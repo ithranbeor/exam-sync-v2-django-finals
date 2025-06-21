@@ -20,19 +20,6 @@ body {
   background-color: #fff;
 }
 
-.left-panel {
-  flex: 7;
-  background-image: url('../assets/ba.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
 .right-panel {
   flex: 3;
   padding: 60px 40px;

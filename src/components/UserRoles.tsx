@@ -222,7 +222,8 @@ const UserRoles = () => {
         <table className="accounts-table">
           <thead>
             <tr>
-              <th>User</th>
+              <th>User ID</th>
+              <th>Name</th>
               <th>Date Created</th>
               <th>Actions</th>
             </tr>
@@ -233,8 +234,16 @@ const UserRoles = () => {
             ) : (
               filteredUsers.map(user => (
                 <tr key={user.user_id}>
+                  <td>{user.user_id}</td>
                   <td>{user.full_name}</td>
-                  <td>{new Date(user.created_at).toLocaleDateString()}</td>
+                  <td>{new Date(user.created_at).toLocaleString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}</td>
                   <td>
                     <button
                       className="action-button import"
@@ -307,7 +316,14 @@ const UserRoles = () => {
                           {role.date_ended?.split('T')[0] || '-'}
                         </span>
                       </td>
-                      <td>{role.created_at.split('T')[0] || '-'}</td>
+                      <td>{new Date(role.created_at).toLocaleString('en-US', {
+                        month: '2-digit',
+                        day: '2-digit',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}</td>
                       <td>
                         <span style={{
                           color: role.status === 'Suspended' ? 'red' : 'green',

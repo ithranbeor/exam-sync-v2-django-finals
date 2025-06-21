@@ -1,10 +1,11 @@
 // src/App.tsx
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import LoginFaculty from './components/LoginFaculty';
-import LoginAdmin from './components/LoginAdmin';
-import DashboardFaculty from './components/DashboardFaculty';
-import DashboardAdmin from './components/DashboardAdmin';
-import AdminColleges from './components/Colleges';
+import LoginFaculty from './components/LoginFaculty.tsx';
+import LoginAdmin from './components/LoginAdmin.tsx';
+import DashboardFaculty from './components/DashboardFaculty.tsx';
+import DashboardAdmin from './components/DashboardAdmin.tsx';
+import AdminColleges from './components/Colleges.tsx';
 
 function App() {
   return (

@@ -22,9 +22,8 @@ body {
 
 .left-panel {
   flex: 7;
-  background-image: url('../assets/ba.png');
+  background-image: url('../assets/newBG.svg');
   background-size: cover;
-  background-position: center;
   background-repeat: no-repeat; 
   display: flex;
   justify-content: center;
@@ -174,4 +173,23 @@ body {
   width: 100%;
   text-align: center;
   box-sizing: border-box;
+}
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 93%;
+  padding-right: 4px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 36px;
+  top: 51%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #092C4C;
+  font-size: 1.1rem;
 }
