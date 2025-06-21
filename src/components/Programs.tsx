@@ -179,8 +179,13 @@ const Programs: React.FC<ProgramsProps> = ({ user }) => {
       <div className="colleges-header">
         <h2 className="colleges-title">Manage Programs</h2>
         <div className="search-bar">
-          <input type="text" placeholder="Search programs…" value={searchTerm} onChange={handleSearchChange}/>
-          <button type="button"><FaSearch/></button>
+          <input
+            type="text"
+            placeholder="Search for Programs"
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+          <button type="button" className="search-button"><FaSearch /></button>
         </div>
       </div>
 
