@@ -111,7 +111,7 @@ body {
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 1rem;
-  width: calc(100% - 30px);
+  width: calc(100% - 3px);
   box-sizing: border-box;
   color: #092C4C;
   background-color: #ffffff;
@@ -180,14 +180,14 @@ body {
 }
 
 .password-wrapper input {
-  width: 93%;
+  width: 100%;
   padding-right: 4px;
 }
 
 .toggle-password {
   position: absolute;
-  right: 36px;
-  top: 51%;
+  right: 10px;
+  top: 60%;
   transform: translateY(-50%);
   cursor: pointer;
   color: #092C4C;
