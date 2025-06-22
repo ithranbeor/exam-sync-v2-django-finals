@@ -248,7 +248,7 @@ const DashboardAdmin = () => {
 
               <div className="card faculty-info-card">
                 <img
-                  src={user.avatar_url ?? './src/assets/ba.png'}
+                  src={user.avatar_url ?? './src/assets/default-pp.jpg'}
                   alt="User avatar"
                   className="faculty-avatar"
                 />
@@ -259,16 +259,10 @@ const DashboardAdmin = () => {
               <div className="full-width-section">
                 <h2>Try these things out</h2>
                 <div className="try-things-grid">
-                  <div className="card try-thing-card">
-                    <img src="./src/assets/ba.png" alt="Set Availability" className="try-thing-img" />
-                    <p>Try Setting Your Availability</p>
-                    <button className="set-button">Set</button>
+                  <div className="card try-thing-card" ><ExamPeriod />
                   </div>
 
-                  <div className="card try-thing-card">
-                    <img src="./src/assets/ba.png" alt="View Exam Schedule" className="try-thing-img" />
-                    <p>View Exam Schedule</p>
-                    <button className="view-button">View</button>
+                  <div className="card try-thing-card"> <SectionCourses />
                   </div>
                 </div>
               </div>

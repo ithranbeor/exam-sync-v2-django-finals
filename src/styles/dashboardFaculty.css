@@ -410,7 +410,7 @@ button.view-button {
   text-align: center;
   padding: 15px;
   background-color: var(--card-bg);
-  border-radius: 10px;
+  border-radius: 15px;
   box-shadow: var(--shadow);
   height: 100%;
   position: relative;

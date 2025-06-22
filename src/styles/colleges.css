@@ -303,3 +303,24 @@ h3 {
 .modal-button.cancel:hover {
   background-color: #193e60;
 }
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.date-input-wrapper input[type="date"] {
+  padding: 8px;
+  border: 2px solid #193e60;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.calendar-icon-right {
+  position: absolute;
+  right: 12px;
+  color: #193e60;
+  pointer-events: none;
+  font-size: 16px;
+}

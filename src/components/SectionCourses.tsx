@@ -136,7 +136,7 @@ const SectionCourses: React.FC = () => {
   const downloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
       ['Course ID','Program ID','Section Name','Number of Students','Year Level','Term Name'],
-      ['IT112','1','A','30','First','First Semester']
+      ['IT 112','BSIT','IT 1R1','30','First','First Semester']
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'SectionCourses Template');
@@ -190,7 +190,7 @@ const SectionCourses: React.FC = () => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Course</th>
+              <th>Course ID</th>
               <th>Program</th>
               <th>Section</th>
               <th>Students</th>
