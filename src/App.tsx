@@ -5,7 +5,6 @@ import LoginFaculty from './components/LoginFaculty.tsx';
 import LoginAdmin from './components/LoginAdmin.tsx';
 import DashboardFaculty from './components/DashboardFaculty.tsx';
 import DashboardAdmin from './components/DashboardAdmin.tsx';
-import AdminColleges from './components/Colleges.tsx';
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
       <Route path="/admin-login" element={<LoginAdmin />} />
       <Route path="/faculty-dashboard" element={<DashboardFaculty />} />
       <Route path="/admin-dashboard" element={<DashboardAdmin />} />
-      <Route path="/admin-colleges" element={<AdminColleges />} />
     </Routes>
   );
 }

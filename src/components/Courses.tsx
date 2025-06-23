@@ -117,13 +117,14 @@ const Courses: React.FC = () => {
   };
 
   const filteredCourses = courses.filter(course =>
-    course.course_name.toLowerCase().includes(searchTerm.toLowerCase())
+    course.course_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.course_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const downloadTemplate = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       ['Course ID', 'Course Name', 'Term Name', 'Instructor Full Name'],
-      ['IT112', 'Computer Programming 1', '1st Semester', 'Ithran Beor Turno']
+      ['IT112', 'Computer Programming 1', '1st Semester', 'Ithran Beor Turno(No Middle Name)']
     ]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Courses Template');
@@ -228,14 +229,14 @@ const Courses: React.FC = () => {
                 <td>{course.term_name}</td>
                 <td>{course.user_fullname}</td>
                 <td className="action-buttons">
-                  <button className="icon-button edit-button" onClick={() => {
+                  <button type='button' className="icon-button edit-button" onClick={() => {
                     setNewCourse(course);
                     setEditMode(true);
                     setShowModal(true);
                   }}>
                     <FaEdit />
                   </button>
-                  <button className="icon-button delete-button" onClick={() => handleDelete(course.course_id)}>
+                  <button type='button' className="icon-button delete-button" onClick={() => handleDelete(course.course_id)}>
                     <FaTrash />
                   </button>
                 </td>

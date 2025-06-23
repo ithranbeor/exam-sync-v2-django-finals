@@ -35,6 +35,12 @@ const ExamPeriod: React.FC = () => {
   const [showImport, setShowImport] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [filterYear, setFilterYear] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterTerm, setFilterTerm] = useState('');
+  const [filterDept, setFilterDept] = useState('');
+  const [filterCollege, setFilterCollege] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   const [newExam, setNewExam] = useState<ExamPeriod>({
     start_date: '',
@@ -145,7 +151,7 @@ const ExamPeriod: React.FC = () => {
   const downloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
       ['Start Date', 'End Date', 'Academic Year', 'Exam Category', 'Term Name', 'Department ID', 'College ID'],
-      ['2025-06-01', '2025-06-05', '2025-2026', 'Midterm', '1st Semester', 'CS', '1']
+      ['2025-06-01', '2025-06-05', '2025-2026', 'Midterm', '1st Semester', 'DIT', 'CITC']
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'ExamPeriod Template');
@@ -153,16 +159,58 @@ const ExamPeriod: React.FC = () => {
   };
 
   const filtered = examPeriods.filter(e =>
-    e.academic_year.toLowerCase().includes(search.toLowerCase())
+    (!search || e.academic_year.toLowerCase().includes(search.toLowerCase())) &&
+    (!filterYear || e.academic_year === filterYear) &&
+    (!filterCategory || e.exam_category === filterCategory) &&
+    (!filterTerm || e.term_id.toString() === filterTerm) &&
+    (!filterDept || e.department_id === filterDept) &&
+    (!filterCollege || e.college_id === filterCollege) &&
+    (e.start_date)
   );
 
   return (
     <div className="colleges-container">
       <div className="colleges-header">
         <h2 className="colleges-title">Manage Exam Periods</h2>
-        <div className="search-bar">
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search Academic Year" />
-          <button type='button' className="search-button"><FaSearch /></button>
+        <div className="search-bar-container">
+          <div className="search-bar" onClick={() => setShowFilters(!showFilters)}>
+            <FaSearch className="search-icon" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search exam periods..."
+              onFocus={() => setShowFilters(true)}
+            />
+          </div>
+
+          {showFilters && (
+            <div className="advanced-filters">
+              <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
+                <option value="">All Years</option>
+                {academicYears.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+
+              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+                <option value="">All Categories</option>
+                {examCategories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+
+              <select value={filterTerm} onChange={(e) => setFilterTerm(e.target.value)}>
+                <option value="">All Terms</option>
+                {terms.map(t => <option key={t.term_id} value={t.term_id.toString()}>{t.term_name}</option>)}
+              </select>
+
+              <select value={filterDept} onChange={(e) => setFilterDept(e.target.value)}>
+                <option value="">All Departments</option>
+                {departments.map(d => <option key={d.department_id} value={d.department_id}>{d.department_name}</option>)}
+              </select>
+
+              <select value={filterCollege} onChange={(e) => setFilterCollege(e.target.value)}>
+                <option value="">All Colleges</option>
+                {colleges.map(c => <option key={c.college_id} value={c.college_id}>{c.college_name}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

@@ -200,7 +200,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
   const downloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
       ['user_id', 'first_name', 'last_name', 'middle_name', 'email_address', 'contact_number', 'status'],
-      [2022000001, 'John', 'Doe', 'A.', 'john.doe@example.com', '09171234567', 'Active'],
+      [2022000000, 'Ithran Beor', 'Turno', '(Optional, just leave blank if not available)', 'Ithran.Beor@example.com', '09123456789', 'Active'],
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'ImportTemplate');

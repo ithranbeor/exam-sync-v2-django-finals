@@ -143,8 +143,8 @@ const Terms: React.FC = () => {
   const downloadTemplate = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       ['Term Name'],
-      ['First Semester'],
-      ['Second Semester'],
+      ['1st Semester'],
+      ['2nd Semester'],
     ]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Terms Template');

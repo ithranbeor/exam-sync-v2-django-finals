@@ -1,0 +1,435 @@
+.set-availability-container {
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+
+/* Page title */
+.set-availability-container h2 {
+    text-align: left;
+    color: #343a40;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+
+/* Container for the two main cards (Set Availability and Request Change) */
+.availability-sections {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+
+/* Styling for each individual card */
+.availability-card {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    width: 480px;
+    max-width: 95%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+.availability-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+
+/* Header for the "Set Availability" card */
+.card-header-set {
+    background-color: #f7b731;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 30px;
+    font-size: 1.2em;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Header for the "Request Change of Availability" card */
+.card-header-request {
+    background-color: #f7b731;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Subtitle for the "Request Change" card */
+.subtitle {
+    text-align: center;
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-bottom: 25px;
+    font-style: italic;
+}
+
+
+/* Styling for the forms within the cards */
+.availability-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+/* Each form input/select group */
+.form-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9em;
+}
+
+
+/* Styling for text inputs, textareas, and custom selects */
+.form-group input[type="text"],
+.form-group textarea,
+.form-group .custom-select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 1em;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: white;
+    color: #343a40; /* Explicitly set text color for all inputs/selects */
+    cursor: pointer; /* Even for textareas, cursor pointer can be fine if you want to indicate clickability */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus,
+.form-group .custom-select:focus {
+    border-color: #f7b731;
+    box-shadow: 0 0 0 0.2rem rgba(247, 183, 49, 0.25);
+    outline: none;
+}
+
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 90px;
+    max-height: 200px;
+    line-height: 1.5;
+    cursor: text; /* Ensure text cursor for typing */
+}
+
+
+/* Wrapper for custom select to position dropdown arrow */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+
+.custom-select-wrapper .dropdown-arrow {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #6c757d;
+    font-size: 0.8em;
+}
+
+
+/* Specific styling for the input field that triggers the date picker */
+.date-input-field {
+    cursor: pointer;
+}
+
+
+
+
+/* Submit button styling */
+.submit-button {
+    background-color: #f7b731;
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    align-self: center;
+    width: 180px;
+    margin-top: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+
+.submit-button:hover {
+    background-color: #e0a32c;
+    transform: translateY(-1px);
+}
+
+
+.submit-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+
+/* Date Picker Styling */
+.date-picker {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    min-width: 280px;
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1000; /* Ensure date picker is on top */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+
+.date-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #343a40;
+    font-size: 1.1em;
+}
+
+
+.date-picker-header button {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 5px 10px;
+    transition: color 0.2s ease;
+}
+
+
+.date-picker-header button:hover {
+    color: #f7b731;
+}
+
+
+.date-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px 8px; /* Vertical gap, Horizontal gap (adjust for desired oblong shape) */
+    text-align: center;
+}
+
+
+.day-name {
+    font-weight: bold;
+    color: #868e96;
+    padding: 5px 0;
+    font-size: 0.9em;
+}
+
+
+.calendar-day {
+    /* Removed border-radius: 50% and aspect-ratio: 1/1 for oblong shape */
+    padding: 8px 5px; /* Adjust padding to control oblong shape, e.g., 8px vertical, 5px horizontal */
+    height: 35px; /* Fixed height for more consistent oblong shape */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+    border-radius: 4px; /* Small border-radius for slightly rounded rectangles/oblongs */
+    transition: background-color 0.2s ease, color 0.2s ease, border 0.2s ease;
+    font-size: 0.95em;
+}
+
+
+.calendar-day.selectable {
+    cursor: pointer;
+    color: #343a40;
+}
+
+
+.calendar-day.selectable:hover {
+    background-color: #e9ecef;
+}
+
+
+/* Style for the selected date */
+.calendar-day.selected {
+    background-color: #f7b731;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(247, 183, 49, 0.3);
+}
+
+
+/* Style for today's date in the calendar */
+.calendar-day.today {
+    border: 2px solid #f7b731;
+    background-color: #fffde7;
+    color: #343a40;
+    font-weight: bold;
+}
+
+
+/* If today is also selected, use the selected style */
+.calendar-day.today.selected {
+    background-color: #f7b731;
+    color: white;
+    border: none;
+}
+
+
+.date-picker-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 15px;
+}
+
+
+.date-picker-footer button {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s ease;
+}
+
+
+.date-picker-footer button:hover {
+    background-color: #495057;
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 992px) {
+    .availability-sections {
+        flex-direction: column;
+        align-items: center;
+    }
+
+
+    .availability-card {
+        width: 90%;
+        max-width: 500px;
+    }
+}
+
+
+@media (max-width: 576px) {
+    .set-availability-container {
+        padding: 15px;
+    }
+
+
+    .set-availability-container h2 {
+        font-size: 1.5em;
+        margin-bottom: 25px;
+    }
+
+
+    .availability-card {
+        padding: 20px;
+        width: 100%;
+    }
+
+
+    .card-header-set,
+    .card-header-request {
+        font-size: 1.1em;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+    }
+
+
+    .form-group input[type="text"],
+    .form-group textarea,
+    .form-group .custom-select {
+        padding: 10px 12px;
+        font-size: 0.95em;
+    }
+
+
+    .submit-button {
+        padding: 12px 20px;
+        font-size: 1em;
+        width: 100%;
+    }
+
+
+    .date-picker {
+        padding: 15px;
+        min-width: unset;
+        width: calc(100% + 2px);
+        left: -1px;
+    }
+
+
+    .date-picker-header {
+        font-size: 1em;
+        margin-bottom: 15px;
+    }
+
+
+    .date-picker-header button {
+        font-size: 1.3em;
+    }
+
+
+    .calendar-day {
+        padding: 8px 3px;
+        font-size: 0.9em;
+        height: 30px; /* Adjust height for smaller screens if needed */
+    }
+
+
+    .date-picker-footer button {
+        padding: 8px 15px;
+        font-size: 0.85em;
+    }
+}

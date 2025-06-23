@@ -37,7 +37,7 @@ interface UserRole {
   date_start: string | null;
   date_ended: string | null;
   created_at: string;
-  status?: string; // Add this
+  status?: string;
 }
 
 const UserRoles = () => {
@@ -79,9 +79,34 @@ const UserRoles = () => {
       })));
       setColleges(collegesRes.data);
       setDepartments(departmentsRes.data);
-      setUserRoles(userRolesRes.data);
-      for (const role of userRolesRes.data) {
-        await suspendUserIfExpired(role.user_id, role.date_ended);
+      const rolesData = userRolesRes.data;
+
+      const nullStatusRoles = rolesData.filter((r: any) => !r.status);
+      for (const role of nullStatusRoles) {
+        await supabase
+          .from('tbl_user_role')
+          .update({ status: 'Active' })
+          .eq('user_role_id', role.user_role_id);
+      }
+
+      const { data: updatedRoles, error: updatedRolesError } = await supabase
+        .from('tbl_user_role')
+        .select('user_role_id, user_id, role_id, college_id, department_id, date_start, date_ended, created_at, status');
+
+      if (!updatedRolesError) {
+        setUserRoles(updatedRoles);
+
+        const today = new Date().toISOString().split('T')[0];
+        for (const role of updatedRoles) {
+          if (role.date_ended && role.date_ended < today) {
+            await supabase
+              .from('tbl_users')
+              .update({ status: 'Suspended' })
+              .eq('user_id', role.user_id);
+          }
+        }
+      } else {
+        toast.error('Failed to re-fetch updated user roles');
       }
 
       const today = new Date().toISOString().split('T')[0];
@@ -188,7 +213,7 @@ const UserRoles = () => {
   const downloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
       ['user_id', 'role_id', 'college_id', 'department_id', 'date_start', 'date_ended'],
-      ['2022...', 1, 'COL001', 'DEP001', '2025-01-01', '2025-12-31']
+      ['2022000000', 1, 'CITC (Optional, but can be edited)', 'DIT (Optional, but can be edited)', '2025-06-22', '2025-06-23']
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'UserRolesTemplate');

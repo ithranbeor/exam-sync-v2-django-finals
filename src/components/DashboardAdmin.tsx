@@ -33,7 +33,6 @@ const DashboardAdmin = () => {
   const [roles, setRoles] = useState<string[]>([]);
   const navigate = useNavigate();
 
-// In DashboardAdmin.tsx, when setting user:
   useEffect(() => {
     const loadUser = async () => {
       const stored = JSON.parse(localStorage.getItem('user') || 'null') ||
@@ -257,7 +256,7 @@ const DashboardAdmin = () => {
               </div>
 
               <div className="full-width-section">
-                <h2>Try these things out</h2>
+                <h2>Shortcut</h2>
                 <div className="try-things-grid">
                   <div className="card try-thing-card" ><ExamPeriod />
                   </div>

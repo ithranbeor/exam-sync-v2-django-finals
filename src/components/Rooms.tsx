@@ -113,7 +113,7 @@ const Rooms: React.FC = () => {
   const downloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
       ['Room ID', 'Room Name', 'Room Type', 'Room Capacity', 'Building ID'],
-      ['RM101', 'Lecture Room', 'Lecture', 40, 'B1']
+      ['9-301', 'Cisco Lab', 'Laboratory', 15, 'BLDG. 09']
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Rooms Template');
