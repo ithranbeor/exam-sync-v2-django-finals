@@ -161,15 +161,6 @@ const UserRoles = () => {
     }
   };
 
-  const suspendUserIfExpired = async (userId: number, dateEnded: string | null) => {
-    if (!dateEnded) return;
-
-    const today = new Date().toISOString().split('T')[0];
-    if (dateEnded < today) {
-      await supabase.from('tbl_users').update({ status: 'Suspended' }).eq('user_id', userId);
-    }
-  };
-
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
