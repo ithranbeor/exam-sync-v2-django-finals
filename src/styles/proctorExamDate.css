@@ -10,7 +10,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 20px;
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 20px auto;
 }
 
@@ -21,6 +21,7 @@ body {
   padding-bottom: 10px;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: baseline;
 }
 
 .dashboard-header h2 {
@@ -52,7 +53,7 @@ body {
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  padding: 10px 0;
+  padding: 1px 0;
   text-align: center;
   font-weight: bold;
   color: #00173D;
@@ -87,12 +88,12 @@ body {
   color: #00173D;
 }
 
-.csm { background-color: #00BCD4; color: white; }
-.citc { background-color: #673AB7; color: white; }
-.cot { background-color: #FF9800; color: white; }
-.cea { background-color: #FF5722; color: white; }
-.cste { background-color: #03A9F4; color: white; }
-.shs { background-color: #E91E63; color: white; }
+.csm { background-color: #00BCD4; color: white; border-radius: 100px;}
+.citc { background-color: #673AB7; color: white; border-radius: 100px;}
+.cot { background-color: #FF9800; color: white; border-radius: 100px;}
+.cea { background-color: #FF5722; color: white; border-radius: 100px;}
+.cste { background-color: #03A9F4; color: white; border-radius: 100px;}
+.shs { background-color: #E91E63; color: white; border-radius: 100px;}
 
 .legend {
   display: flex;
@@ -170,7 +171,7 @@ body {
   color: #FCB316;
   border: none;
   padding: 5px 5px;
-  font-size: 18px;
+  font-size: 15px;
   border-radius: 100px;
   cursor: pointer;
   transition: 0.2s ease;
@@ -188,7 +189,7 @@ body {
 }
 
 .now-button {
-  padding: 6px 14px;
+  padding: 3px 10px;
   background-color: #00173D;
   color: #ffae00;
   border: 1px solid #00173D;

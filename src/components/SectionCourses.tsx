@@ -63,24 +63,41 @@ const SectionCourses: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    console.log("🚀 Attempting insert:", newSection);
 
-    const { data, error } = await supabase
-      .from('tbl_sectioncourse')
-      .insert([newSection])
-      .select();
+    if (editMode) {
+      const { error } = await supabase
+        .from('tbl_sectioncourse')
+        .update({
+          section_name,
+          number_of_students,
+          year_level,
+          term_id
+        })
+        .match({ course_id, program_id });
 
-    if (error) {
-      console.error("❌ Insert error:", error);
-      toast.error(`Insert failed: ${error.message || 'Unknown Supabase error'}`);
+      if (error) {
+        console.error("❌ Update error:", error);
+        toast.error(`Update failed: ${error.message || 'Unknown error'}`);
+      } else {
+        toast.success('Section updated');
+      }
+
     } else {
-      console.log("✅ Insert successful:", data);
-      toast.success('Section added');
-      fetchAll();
+      const { error } = await supabase
+        .from('tbl_sectioncourse')
+        .insert([newSection]);
+
+      if (error) {
+        console.error("❌ Insert error:", error);
+        toast.error(`Insert failed: ${error.message || 'Unknown error'}`);
+      } else {
+        toast.success('Section added');
+      }
     }
 
     setShowModal(false);
     setIsSubmitting(false);
+    fetchAll();
   };
 
   const handleDelete = async (course_id: string, program_id: string) => {
@@ -149,7 +166,6 @@ const SectionCourses: React.FC = () => {
 
   return (
     <div className="colleges-container">
-      {/* Header & Search */}
       <div className="colleges-header">
         <h2 className="colleges-title">Manage Section Courses</h2>
         <div className="search-bar">
@@ -162,7 +178,6 @@ const SectionCourses: React.FC = () => {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="colleges-actions">
         <button type='button' className="action-button add-new" onClick={() => {
           setEditMode(false);
@@ -184,7 +199,6 @@ const SectionCourses: React.FC = () => {
         </button>
       </div>
 
-      {/* Table */}
       <div className="colleges-table-container">
         <table className="colleges-table">
           <thead>
@@ -227,7 +241,6 @@ const SectionCourses: React.FC = () => {
         </table>
       </div>
 
-      {/* Add/Edit Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -329,7 +342,6 @@ const SectionCourses: React.FC = () => {
         </div>
       )}
 
-      {/* Import Modal */}
       {showImport && (
         <div className="modal-overlay">
           <div className="modal">

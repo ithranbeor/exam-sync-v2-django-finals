@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import React, { useState, useEffect } from 'react';
-import { FaTrash, FaEdit, FaSearch, FaDownload } from 'react-icons/fa';
+import { FaTrash, FaSearch, FaDownload } from 'react-icons/fa';
 import { supabase } from '../lib/supabaseClient.ts';
 import { ToastContainer, toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
@@ -205,18 +205,6 @@ const Terms: React.FC = () => {
                   <td>{index + 1}</td>
                   <td>{term.term_name}</td>
                   <td className="action-buttons">
-                    <button
-                      type="button"
-                      className="icon-button edit-button"
-                      onClick={() => {
-                        setNewTermName(term.term_name);
-                        setEditMode(true);
-                        setEditingTermId(term.term_id);
-                        setShowModal(true);
-                      }}
-                    >
-                      <FaEdit />
-                    </button>
                     <button
                       type="button"
                       className="icon-button delete-button"
