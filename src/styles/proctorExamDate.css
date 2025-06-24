@@ -18,7 +18,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
   padding-bottom: 10px;
   flex-wrap: wrap;
   gap: 10px;
@@ -53,12 +52,10 @@ body {
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background-color: #f0f0f0;
   padding: 10px 0;
   text-align: center;
   font-weight: bold;
   color: #00173D;
-  border-bottom: 1px solid #ccc;
 }
 
 .calendar-grid {

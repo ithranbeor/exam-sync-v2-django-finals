@@ -12,6 +12,7 @@ import Profile from '../components/Profile.tsx';
 import ProctorExamDate from "./ProctorExamDate.tsx";
 import ProctorSetAvailability from "./ProctorSetAvailability.tsx";
 import ProctorViewExam from "./ProctorViewExam.tsx";
+import Notification from "./Notification.tsx";
 
 
 const iconStyle = { className: 'icon', size: 20 };
@@ -184,9 +185,9 @@ const DashboardFaculty = () => {
 
           {activeMenu === 'exam-date' && <ProctorExamDate/>}
           {activeMenu === 'profile' && <Profile user={user} />}
-          {activeMenu === 'set-availability' && <ProctorSetAvailability/>}
+          {activeMenu === 'set-availability' && <ProctorSetAvailability user={user}/>}
           {activeMenu === 'view-exam-schedule' && <ProctorViewExam/>}
-          {activeMenu === 'notification' && <div>Notifications coming soon</div>}
+          {activeMenu === 'notification' && <div><Notification user={user}/></div>}
         </main>
       </div>
     </div>

@@ -14,9 +14,10 @@ interface ExamPeriod {
   academic_year: string;
   exam_category: string;
   term_id: number;
-  department_id: string;
-  college_id: string;
+  department_id?: string | null;
+  college_id?: string | null;
 }
+
 
 interface Term { term_id: number; term_name: string; }
 interface Department { department_id: string; department_name: string; }
@@ -71,10 +72,11 @@ const ExamPeriod: React.FC = () => {
 
   const handleSubmit = async () => {
     const { start_date, end_date, academic_year, exam_category, term_id, department_id, college_id } = newExam;
-    if (!start_date || !end_date || !academic_year || !exam_category || !term_id || !department_id || !college_id) {
-      toast.error('All fields are required');
+    if (!start_date || !end_date || !academic_year || !exam_category || !term_id) {
+      toast.error('Please fill in all required fields');
       return;
     }
+
     setIsSubmitting(true);
 
     const payload = {
@@ -83,8 +85,8 @@ const ExamPeriod: React.FC = () => {
       academic_year,
       exam_category,
       term_id,
-      department_id,
-      college_id,
+      department_id: department_id || null,
+      college_id: college_id || null,
     };
 
     const { error } = editMode
@@ -125,7 +127,7 @@ const ExamPeriod: React.FC = () => {
       for (const row of data) {
         const term = terms.find(t => t.term_name === row['Term Name']);
         const dept = departments.find(d => d.department_id === row['Department ID']);
-        const college = colleges.find(c => c.college_id === row['College ID']);
+        const college = colleges.find(c => c.college_id === row['College ID']);  
         if (!term || !dept || !college) continue;
 
         const payload = {
@@ -134,8 +136,8 @@ const ExamPeriod: React.FC = () => {
           academic_year: row['Academic Year'],
           exam_category: row['Exam Category'],
           term_id: term.term_id,
-          department_id: dept.department_id,
-          college_id: college.college_id,
+          department_id: dept?.department_id || null,
+          college_id: college?.college_id || null,
         };
 
         const { error } = await supabase.from('tbl_examperiod').insert([payload]);
@@ -326,14 +328,14 @@ const ExamPeriod: React.FC = () => {
             </div>
             <div className="input-group">
               <label>Department</label>
-              <select value={newExam.department_id} onChange={(e) => setNewExam({ ...newExam, department_id: e.target.value })}>
+              <select value={newExam.department_id ?? ''} onChange={(e) => setNewExam({ ...newExam, department_id: e.target.value })}>
                 <option value="">Select Department</option>
                 {departments.map(d => <option key={d.department_id} value={d.department_id}>{d.department_name}</option>)}
               </select>
             </div>
             <div className="input-group">
               <label>College</label>
-              <select value={newExam.college_id} onChange={(e) => setNewExam({ ...newExam, college_id: e.target.value })}>
+              <select value={newExam.college_id ?? ''} onChange={(e) => setNewExam({ ...newExam, college_id: e.target.value })}>
                 <option value="">Select College</option>
                 {colleges.map(c => <option key={c.college_id} value={c.college_id}>{c.college_name}</option>)}
               </select>

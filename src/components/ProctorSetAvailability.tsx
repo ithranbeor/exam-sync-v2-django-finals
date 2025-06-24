@@ -1,24 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/proctorSetAvailability.css';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { supabase } from '../lib/supabaseClient.ts';
 
-const ProctorSetAvailability = () => {
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('7 AM - 12 NN (Morning)');
-  const [availabilityStatus, setAvailabilityStatus] = useState<string>('Available');
-  const [remarks, setRemarks] = useState<string>('');
-  const [changeStatus, setChangeStatus] = useState<string>('Unavailable');
-  const [reason, setReason] = useState<string>('');
-  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+type ProctorSetAvailabilityProps = {
+  user: {
+    user_id: number;
+    [key: string]: unknown;
+  };
+};
 
-  useEffect(() => {
-    const today = new Date();
-    setSelectedDate(today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
-    setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
-  }, []);
+const ProctorSetAvailability: React.FC<ProctorSetAvailabilityProps> = ({ user }) => {
+
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState('7 AM - 12 NN (Morning)');
+  const [availabilityStatus, setAvailabilityStatus] = useState('available');
+  const [remarks, setRemarks] = useState('');
+  const [changeStatus, setChangeStatus] = useState('unavailable');
+  const [reason, setReason] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const today = new Date();
+
+  useEffect(() => {
+    const localToday = new Date();
+    localToday.setHours(12, 0, 0, 0);
+    setSelectedDate(localToday.toISOString().split('T')[0]);
+    setCurrentMonth(new Date(localToday.getFullYear(), localToday.getMonth(), 1));
+  }, []);
 
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
@@ -30,19 +40,15 @@ const ProctorSetAvailability = () => {
     const startDay = firstDayOfMonth(year, month);
 
     const daysArray: (number | null)[] = [];
-    for (let i = 0; i < startDay; i++) {
-      daysArray.push(null);
-    }
-    for (let i = 1; i <= numDays; i++) {
-      daysArray.push(i);
-    }
+    for (let i = 0; i < startDay; i++) daysArray.push(null);
+    for (let i = 1; i <= numDays; i++) daysArray.push(i);
     return daysArray;
   };
 
   const handleDateSelect = (day: number | null) => {
     if (day) {
-      const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      setSelectedDate(newDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
+      const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day, 12);
+      setSelectedDate(newDate.toISOString().split('T')[0]);
       setShowDatePicker(false);
     }
   };
@@ -57,42 +63,67 @@ const ProctorSetAvailability = () => {
 
   const goToToday = () => {
     const today = new Date();
+    today.setHours(12, 0, 0, 0);
     setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
-    setSelectedDate(today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
+    setSelectedDate(today.toISOString().split('T')[0]);
   };
 
   const timeSlots = [
     '7 AM - 12 NN (Morning)',
     '1 PM - 5 PM (Afternoon)',
-    '5 PM - 9 PM (Evening)'
+    '5 PM - 9 PM (Evening)',
   ];
 
-  const availabilityOptions = ['Available', 'Unavailable'];
+  const availabilityOptions = ['available', 'unavailable'];
 
-  const handleSubmitAvailability = (e: React.FormEvent) => {
+  const handleSubmitAvailability = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Availability set successfully!');
+
+    const userId = user?.user_id;
+    if (!userId) {
+      alert('User is not logged in.');
+      return;
+    }
+
+    const data = {
+      day: selectedDate,
+      time_slot: selectedTimeSlot,
+      status: availabilityStatus,
+      remarks,
+      user_id: userId,
+    };
+
+    const { error } = await supabase.from('tbl_availability').insert(data);
+
+    if (error) {
+      console.error('Error submitting availability:', error.message);
+      alert('Failed to submit availability.');
+    } else {
+      alert('Availability set successfully!');
+      setRemarks('');
+    }
   };
 
   const handleSubmitChangeRequest = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Change request:', { changeStatus, reason });
     alert('Change request submitted!');
   };
 
   return (
     <div className="set-availability-container">
       <div className="availability-sections">
-        {/* Set Availability Section */}
         <div className="availability-card">
           <div className="card-header-set">Set Availability</div>
           <form onSubmit={handleSubmitAvailability} className="availability-form">
+            {/* Date Picker */}
             <div className="form-group">
               <label htmlFor="day">Day</label>
               <div className="custom-select-wrapper">
                 <input
                   type="text"
                   id="day"
-                  value={selectedDate}
+                  value={new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                   readOnly
                   onClick={() => setShowDatePicker(!showDatePicker)}
                   className="date-input-field"
@@ -106,17 +137,16 @@ const ProctorSetAvailability = () => {
                       <button type="button" onClick={goToNextMonth}><FaChevronRight /></button>
                     </div>
                     <div className="date-picker-grid">
-                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((dayName, index) => (
-                        <div key={index} className="day-name">{dayName}</div>
+                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                        <div key={i} className="day-name">{d}</div>
                       ))}
                       {getCalendarDays().map((day, index) => {
-                        const currentCalendarDayDate = day
-                          ? new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+                        const dayDate = day
+                          ? new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day, 12)
                           : null;
-                        const isSelected = currentCalendarDayDate &&
-                          selectedDate === currentCalendarDayDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                        const isToday = currentCalendarDayDate &&
-                          currentCalendarDayDate.toDateString() === today.toDateString();
+
+                        const isSelected = dayDate && selectedDate === dayDate.toISOString().split('T')[0];
+                        const isToday = dayDate && dayDate.toDateString() === today.toDateString();
 
                         return (
                           <div
@@ -138,6 +168,7 @@ const ProctorSetAvailability = () => {
               </div>
             </div>
 
+            {/* Time Slot */}
             <div className="form-group">
               <label htmlFor="timeSlot">Time Slot</label>
               <div className="custom-select-wrapper">
@@ -155,6 +186,7 @@ const ProctorSetAvailability = () => {
               </div>
             </div>
 
+            {/* Status */}
             <div className="form-group">
               <label htmlFor="status">Status</label>
               <div className="custom-select-wrapper">
@@ -165,13 +197,14 @@ const ProctorSetAvailability = () => {
                   className="custom-select"
                 >
                   {availabilityOptions.map(option => (
-                    <option key={option} value={option}>{option}</option>
+                    <option key={option} value={option}>{option.charAt(0).toUpperCase() + option.slice(1)}</option>
                   ))}
                 </select>
                 <span className="dropdown-arrow">&#9660;</span>
               </div>
             </div>
 
+            {/* Remarks */}
             <div className="form-group">
               <label htmlFor="remarks">Remarks</label>
               <textarea
@@ -186,7 +219,7 @@ const ProctorSetAvailability = () => {
           </form>
         </div>
 
-        {/* Request Change Section */}
+        {/* Change Request */}
         <div className="availability-card">
           <div className="card-header-request">Request Change of Availability</div>
           <div className="subtitle">(only available after the release of exam schedule)</div>
@@ -201,7 +234,7 @@ const ProctorSetAvailability = () => {
                   className="custom-select"
                 >
                   {availabilityOptions.map(option => (
-                    <option key={option} value={option}>{option}</option>
+                    <option key={option} value={option}>{option.charAt(0).toUpperCase() + option.slice(1)}</option>
                   ))}
                 </select>
                 <span className="dropdown-arrow">&#9660;</span>
