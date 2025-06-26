@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import React, { useEffect, useState } from 'react';
-import { FaTrash, FaSearch, FaPen } from 'react-icons/fa';
+import { FaSearch, FaPen } from 'react-icons/fa';
 import { supabase } from '../lib/supabaseClient.ts';
 import { ToastContainer, toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
@@ -28,7 +28,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [loadingStatusId, setLoadingStatusId] = useState<number | null>(null);
+  const [_loadingStatusId, setLoadingStatusId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
   const [newAccount, setNewAccount] = useState<UserAccount>({
@@ -159,7 +159,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
     }
   };
 
-  const handleDeleteAccount = async (userId: number) => {
+  const _handleDeleteAccount = async (userId: number) => {
     const account = accounts.find(u => u.user_id === userId);
     if (!account || !account.email_address) {
       toast.error('Invalid user data');
@@ -228,7 +228,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
 
         const default_password = `${user_id}@${last_name}`;
         try {
-          const response = await fetch('https://kfpgokxyjpyupyzsbzcd.supabase.co/functions/v1/create-user', {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_FUNCTION_URL}/create-user`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -326,9 +326,6 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
                 })}</td>
                 <td className="action-buttons">
                   <button type="button" className="icon-button edit-button" onClick={() => handleEditAccount(u)}><FaPen /></button>
-                  <button type="button" className="icon-button delete-button" onClick={() => handleDeleteAccount(u.user_id)} disabled={loadingStatusId === u.user_id}>
-                    {loadingStatusId === u.user_id ? '...' : <FaTrash />}
-                  </button>
                 </td>
               </tr>
             ))}

@@ -222,7 +222,7 @@ const SectionCourses: React.FC = () => {
                 <td>{sc.section_name}</td>
                 <td>{sc.number_of_students}</td>
                 <td>{sc.year_level}</td>
-                <td>{sc.term_id}</td>
+                <td>{terms.find(term => term.term_id === sc.term_id)?.term_name}</td>
                 <td className="action-buttons">
                   <button type='button' className="icon-button edit-button" onClick={() => {
                     setEditMode(true);

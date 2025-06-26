@@ -305,6 +305,4 @@ body {
 }
 .profile-field-group input[disabled] {
   background-color: #f5f5f5;
-  font-weight: bold;
-  color: #04014d;
 }

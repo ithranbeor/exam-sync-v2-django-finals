@@ -278,13 +278,11 @@ const UserRoles = () => {
         </table>
       </div>
 
-      {/* Details Modal */}
       {showDetailsModal && selectedUserId !== null && (
         <div className="modal-overlay">
           <div className="modal" style={{ width: 1300 }}>
             <h3>User Role Details</h3>
 
-            {/* User Info Section */}
             <div style={{
               marginBottom: '1px',
               padding: '5px',
@@ -385,7 +383,6 @@ const UserRoles = () => {
         </div>
       )}
 
-      {/* Nested Add Role Modal */}
       {showAddRoleModal && (
         <div className="modal-overlay">
           <div className="modal" style={{ width: 600 }}>
@@ -545,7 +542,6 @@ const UserRoles = () => {
         </div>
       )}
 
-      {/* Import Modal */}
       {showImportModal && (
         <div className="modal-overlay">
           <div className="modal">
