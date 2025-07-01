@@ -234,7 +234,7 @@ const Departments: React.FC<DepartmentsProps> = ({ user }) => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Department ID</th>
+              <th>Department Code</th>
               <th>Department Name</th>
               <th>College</th>
               <th>Actions</th>

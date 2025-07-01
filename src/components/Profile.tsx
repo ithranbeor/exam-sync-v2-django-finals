@@ -1,9 +1,11 @@
-// deno-lint-ignore-file no-explicit-any jsx-boolean-value
-// src/components/Profile.tsx
+// deno-lint-ignore-file no-explicit-any
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient.ts';
 import '../styles/profile.css';
 import { MdEdit } from 'react-icons/md';
+import { FaTrash } from 'react-icons/fa';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface UserProfile {
   user_id: number;
@@ -24,8 +26,7 @@ interface UserRoleInfo {
 interface ProfileProps {
   user: {
     user_id: string;
-    email: string; 
-
+    email: string;
   } | null;
 }
 
@@ -41,12 +42,18 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
   });
 
   const [originalProfile, setOriginalProfile] = useState<UserProfile | null>(null);
-
   const [editingPersonalDetails, setEditingPersonalDetails] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
   const [userRoles, setUserRoles] = useState<UserRoleInfo[]>([]);
+  const [confirmEmail, setConfirmEmail] = useState('');
+
+
+  // Password change states
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const fetchProfile = useCallback(async () => {
     if (!user?.user_id) {
@@ -64,22 +71,20 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
         .eq('user_id', user.user_id)
         .single();
 
-      if (fetchError) {
-        throw fetchError;
-      }
+      if (fetchError) throw fetchError;
 
       if (userData) {
         const fetchedProfile: UserProfile = {
           first_name: userData.first_name || '',
           last_name: userData.last_name || '',
           middle_name: userData.middle_name || '',
-          email_address: userData.email_address || user.email || '', 
+          email_address: userData.email_address || user.email || '',
           contact_number: userData.contact_number || '',
           avatar_url: userData.avatar_url || null,
           user_id: userData.user_id || 0,
         };
         setProfile(fetchedProfile);
-        setOriginalProfile(fetchedProfile); 
+        setOriginalProfile(fetchedProfile);
         setPreview(fetchedProfile.avatar_url || null);
       }
     } catch (err: any) {
@@ -94,32 +99,21 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
     fetchProfile();
   }, [fetchProfile]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user?.user_id) {
-      setError('No file selected or user not logged in.');
+      toast.error('No file selected or user not logged in.');
       return;
     }
 
-    setError(null);
-
     try {
       if (profile.avatar_url) {
-
-        const urlParts = profile.avatar_url.split('/avatars/');
-        if (urlParts.length === 2) {
-          const _path = `avatars/${urlParts[1]}`;
-          const { error: deleteError } = await supabase.storage
-            .from('avatars')
-            .remove([urlParts[1]]);
-          if (deleteError) {
-            console.warn('Could not delete old avatar:', deleteError.message);
-          }
-        }
+        toast.warn('Please delete the current profile picture before uploading a new one.');
+        return;
       }
 
       const ext = file.name.split('.').pop();
@@ -128,30 +122,61 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, {
-          upsert: true, 
+          upsert: true,
           contentType: file.type,
         });
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       if (!urlData?.publicUrl) throw new Error('Could not get avatar URL');
 
+      const finalUrl = `${urlData.publicUrl}?v=${Date.now()}`;
       const { error: dbError } = await supabase
         .from('tbl_users')
-        .update({ avatar_url: urlData.publicUrl })
+        .update({ avatar_url: finalUrl })
         .eq('user_id', user.user_id);
 
       if (dbError) throw dbError;
 
-      setProfile((prev) => ({ ...prev, avatar_url: urlData.publicUrl }));
-      setPreview(urlData.publicUrl);
+      setProfile((prev) => ({ ...prev, avatar_url: finalUrl }));
+      setPreview(finalUrl);
     } catch (err: any) {
       console.error('Avatar upload error:', err.message);
-      setError('Failed to upload avatar. ' + err.message);
+      toast.error('Failed to upload avatar. ' + err.message);
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    if (!profile.avatar_url || !user?.user_id) {
+      toast.error('No avatar to delete or user not logged in.');
+      return;
+    }
+
+    try {
+      const urlParts = profile.avatar_url.split('/avatars/');
+      if (urlParts.length !== 2) throw new Error('Invalid avatar URL format.');
+
+      const fileName = urlParts[1];
+      const { error: deleteError } = await supabase.storage
+        .from('avatars')
+        .remove([fileName]);
+
+      if (deleteError) throw new Error('Failed to delete from storage: ' + deleteError.message);
+
+      const { error: dbError } = await supabase
+        .from('tbl_users')
+        .update({ avatar_url: null })
+        .eq('user_id', user.user_id);
+
+      if (dbError) throw new Error('Failed to update profile: ' + dbError.message);
+
+      setProfile((prev) => ({ ...prev, avatar_url: null }));
+      setPreview(null);
+      toast.success('Profile picture deleted.');
+    } catch (err: any) {
+      console.error('Avatar delete error:', err.message);
+      toast.error('Error deleting avatar. ' + err.message);
     }
   };
 
@@ -189,7 +214,7 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
 
   const handleSaveChanges = async () => {
     if (!user?.user_id) {
-      setError('User not logged in. Cannot save profile.');
+      toast.error('User not logged in. Cannot save profile.');
       return;
     }
 
@@ -211,15 +236,14 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
         .update(updatePayload)
         .eq('user_id', profile.user_id);
 
-      if (updateError) {
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
       setEditingPersonalDetails(false);
       await fetchProfile();
+      toast.success('Profile updated successfully!');
     } catch (err: any) {
       console.error('Error saving profile:', err.message);
-      setError('Failed to save profile. ' + err.message);
+      toast.error('Failed to save profile. ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -231,6 +255,54 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
       setPreview(originalProfile.avatar_url);
     }
     setEditingPersonalDetails(false);
+  };
+
+  const handleSendResetLink = async () => {
+    if (!profile.email_address) {
+      toast.error('No email found on this account.');
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(profile.email_address, {
+      redirectTo: 'http://localhost:5173/reset-password', // Replace with your redirect URL
+    });
+
+    if (error) {
+      console.error('Reset link error:', error.message);
+      toast.error('Failed to send reset link.');
+    } else {
+      toast.success('Reset link sent to your email.');
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (confirmEmail.trim() !== profile.email_address.trim()) {
+      toast.error('Email does not match. Please confirm your account.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters.');
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      console.error('Password update failed:', error.message);
+      toast.error('Failed to change password.');
+    } else {
+      toast.success('Password updated successfully.');
+      setShowPasswordForm(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      setConfirmEmail('');
+    }
   };
 
   if (loading) {
@@ -245,11 +317,7 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
 
   return (
     <div className="profile-container">
-      <div className="profile-header-title">
-        Profile Details
-      </div>
-
-      {error && <div className="error-message-banner">{error}</div>}
+      <div className="profile-header-title">Profile Details</div>
 
       <div className="profile-section profile-info-card">
         <div className="profile-avatar-wrapper">
@@ -259,18 +327,32 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
             className="profile-avatar"
           />
           {editingPersonalDetails && (
-            <label htmlFor="avatar-upload" className="profile-avatar-edit-icon">
-              <MdEdit size={24} />
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                style={{ display: 'none' }}
-              />
-            </label>
+            <>
+              <label htmlFor="avatar-upload" className="profile-avatar-edit-icon">
+                <MdEdit size={24} />
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  style={{ display: 'none' }}
+                />
+              </label>
+
+              {preview && (
+                <button
+                  type="button"
+                  className="delete-avatar-btn"
+                  onClick={handleDeleteAvatar}
+                  title="Delete Profile Picture"
+                >
+                  <FaTrash />
+                </button>
+              )}
+            </>
           )}
         </div>
+
         <div className="profile-name-details">
           <div className="profile-full-name">
             {profile.first_name} {profile.middle_name} {profile.last_name}
@@ -278,7 +360,7 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
           <div className="profile-user-type">
             {userRoles.length > 0 ? (
               userRoles.map((role, index) => (
-                <div key={index} style={{ marginBottom: 2 }}>
+                <div key={index}>
                   <strong>{role.role_name}</strong>
                   {role.college_name && ` - ${role.college_name}`}
                   {role.department_name && ` / ${role.department_name}`}
@@ -291,22 +373,26 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
         </div>
       </div>
 
+      {/* Personal Details */}
       <div className="profile-section personal-details-card">
         <div className="personal-details-header">
           <h3>Personal Details</h3>
           {!editingPersonalDetails && (
-            <button type='button' className="edit-details-btn" onClick={() => setEditingPersonalDetails(true)} disabled={loading}>
+            <button
+              type="button"
+              className="edit-details-btn"
+              onClick={() => setEditingPersonalDetails(true)}
+              disabled={loading}
+            >
               <MdEdit />
             </button>
           )}
         </div>
 
         <div className="personal-details-grid">
-          {/* Row 1 */}
           <div className="profile-field-group">
-            <label htmlFor="first_name">First Name</label>
+            <label>First Name</label>
             <input
-              id="first_name"
               name="first_name"
               type="text"
               value={profile.first_name}
@@ -315,9 +401,8 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </div>
           <div className="profile-field-group">
-            <label htmlFor="middle_name">M.I.</label>
+            <label>M.I.</label>
             <input
-              id="middle_name"
               name="middle_name"
               type="text"
               value={profile.middle_name}
@@ -326,9 +411,8 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </div>
           <div className="profile-field-group">
-            <label htmlFor="last_name">Last Name</label>
+            <label>Last Name</label>
             <input
-              id="last_name"
               name="last_name"
               type="text"
               value={profile.last_name}
@@ -337,21 +421,14 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </div>
 
-          {/* Row 2 */}
           <div className="profile-field-group">
-            <label htmlFor="id">User ID</label>
-            <input
-              id="id"
-              name="id"
-              type="text"
-              value={profile.user_id}
-              disabled={true}
-            />
+            <label>User ID</label>
+            <input type="text" value={profile.user_id} disabled />
           </div>
+
           <div className="profile-field-group span-2-columns">
-            <label htmlFor="email_address">Email Address</label>
+            <label>Email Address</label>
             <input
-              id="email_address"
               name="email_address"
               type="email"
               value={profile.email_address}
@@ -360,11 +437,9 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </div>
 
-          {/* Row 3 */}
           <div className="profile-field-group">
-            <label htmlFor="contact_number">Contact No.</label>
+            <label>Contact No.</label>
             <input
-              id="contact_number"
               name="contact_number"
               type="text"
               value={profile.contact_number}
@@ -376,10 +451,10 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
 
         {editingPersonalDetails && (
           <div className="personal-details-actions">
-            <button type="button" className="btn cancel-personal-details" onClick={handleCancelEdit} disabled={loading}>
+            <button type='button' className="btn cancel-personal-details" onClick={handleCancelEdit} disabled={loading}>
               Cancel
             </button>
-            <button type="button" className="btn save-personal-details" onClick={handleSaveChanges} disabled={loading}>
+            <button type='button' className="btn save-changes-global" onClick={handleSaveChanges} disabled={loading}>
               Save
             </button>
           </div>
@@ -387,14 +462,46 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
       </div>
 
       <div className="profile-section password-change-card">
-        <button type="button" className="btn change-password-btn">Change password</button>
+        {showPasswordForm ? (
+          <div className="password-form">
+            <div className="profile-field-group">
+              <label>Confirm Email Address</label>
+              <input
+                type="email"
+                value={confirmEmail}
+                onChange={(e) => setConfirmEmail(e.target.value)}
+                placeholder="Enter your email to confirm"
+              />
+            </div>
+            <div className="profile-field-group">
+              <label>New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="profile-field-group">
+              <label>Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            <div className="password-actions">
+              <button type='button' className="btn cancel-personal-details" onClick={() => setShowPasswordForm(false)}>Cancel</button>
+              <button type='button' className="btn save-changes-global" onClick={handlePasswordChange}>Update Password</button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" className="btn change-password-btn" onClick={handleSendResetLink}>
+            Change Password
+          </button>
+        )}
       </div>
 
-      <div className="profile-global-actions">
-        <button type='button' className="btn save-changes-global" onClick={handleSaveChanges} disabled={loading}>
-          Save Changes
-        </button>
-      </div>
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 };

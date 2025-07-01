@@ -292,7 +292,7 @@ export const Accounts: React.FC<AccountsProps> = ({ user }) => {
           <thead>
             <tr>
               <th>Picture</th>
-              <th>User ID</th>
+              <th>ID Number</th>
               <th>Full Name</th>
               <th>Email</th>
               <th>Contact</th>

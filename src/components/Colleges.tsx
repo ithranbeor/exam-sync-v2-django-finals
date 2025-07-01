@@ -197,7 +197,7 @@ const Colleges: React.FC<CollegesProps> = ({ user }) => {
           <thead>
             <tr>
               <th>#</th>
-              <th>College ID</th>
+              <th>College Code</th>
               <th>College Name</th>
               <th>Actions</th>
             </tr>

@@ -7,9 +7,24 @@ import * as XLSX from 'xlsx';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/colleges.css';
 
-interface Course { course_id: string; course_name: string; }
-interface Program { program_id: string; program_name: string; }
-interface Term { term_id: number; term_name: string; }
+interface Course { 
+  course_id: string; 
+  course_name: string; 
+}
+
+interface Program { 
+  program_id: string; 
+  program_name: string; 
+}
+
+interface Term { 
+  term_id: number; 
+  term_name: string; 
+  tbl_examperiod?: {
+    academic_year: string;
+  };
+}
+
 interface SectionCourse {
   course_id: string;
   program_id: string;
@@ -46,12 +61,32 @@ const SectionCourses: React.FC = () => {
       supabase.from('tbl_sectioncourse').select('*'),
       supabase.from('tbl_course').select('course_id, course_name'),
       supabase.from('tbl_program').select('program_id, program_name'),
-      supabase.from('tbl_term').select('*'),
+      supabase
+      .from('tbl_term')
+      .select(`
+        term_id,
+        term_name,
+        tbl_examperiod (
+          academic_year
+        )
+      `),
     ]);
     if (secData.data) setSectionCourses(secData.data);
     if (courseData.data) setCourses(courseData.data);
     if (progData.data) setPrograms(progData.data);
-    if (termData.data) setTerms(termData.data);
+    if (termData.data) {
+      const mapped = termData.data.map((t: any) => {
+        const academicYear = Array.isArray(t.tbl_examperiod) && t.tbl_examperiod.length > 0
+          ? t.tbl_examperiod[0].academic_year
+          : 'N/A';
+
+        return {
+          ...t,
+          tbl_examperiod: { academic_year: academicYear },
+        };
+      });
+      setTerms(mapped);
+    }
   };
 
   const handleSubmit = async () => {
@@ -167,7 +202,7 @@ const SectionCourses: React.FC = () => {
   return (
     <div className="colleges-container">
       <div className="colleges-header">
-        <h2 className="colleges-title">Manage Section Courses</h2>
+        <h2 className="colleges-title">Section Courses</h2>
         <div className="search-bar">
           <input type="text"
             placeholder="Search Section Name"
@@ -204,7 +239,7 @@ const SectionCourses: React.FC = () => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Course ID</th>
+              <th>Course Code</th>
               <th>Program</th>
               <th>Section</th>
               <th>Students</th>
@@ -222,7 +257,14 @@ const SectionCourses: React.FC = () => {
                 <td>{sc.section_name}</td>
                 <td>{sc.number_of_students}</td>
                 <td>{sc.year_level}</td>
-                <td>{terms.find(term => term.term_id === sc.term_id)?.term_name}</td>
+                <td>
+                  {
+                    (() => {
+                      const term = terms.find(t => t.term_id === sc.term_id);
+                      return term ? `${term.term_name} (${term.tbl_examperiod?.academic_year || 'N/A'})` : 'N/A';
+                    })()
+                  }
+                </td>
                 <td className="action-buttons">
                   <button type='button' className="icon-button edit-button" onClick={() => {
                     setEditMode(true);
@@ -327,7 +369,7 @@ const SectionCourses: React.FC = () => {
                 <option value="">Select Term</option>
                 {terms.map(t => (
                   <option key={t.term_id} value={t.term_id}>
-                    {t.term_name}
+                    {t.term_name} ({t.tbl_examperiod?.academic_year || 'N/A'})
                   </option>
                 ))}
               </select>

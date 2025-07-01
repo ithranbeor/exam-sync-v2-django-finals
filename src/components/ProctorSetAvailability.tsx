@@ -115,8 +115,8 @@ const ProctorSetAvailability: React.FC<ProctorSetAvailabilityProps> = ({ user })
       <div className="availability-sections">
         <div className="availability-card">
           <div className="card-header-set">Set Availability</div>
+          <div className="subtitle">(This will allow the proctor to choose his/her availability for the exam schedule.)</div>
           <form onSubmit={handleSubmitAvailability} className="availability-form">
-            {/* Date Picker */}
             <div className="form-group">
               <label htmlFor="day">Day</label>
               <div className="custom-select-wrapper">
@@ -168,7 +168,6 @@ const ProctorSetAvailability: React.FC<ProctorSetAvailabilityProps> = ({ user })
               </div>
             </div>
 
-            {/* Time Slot */}
             <div className="form-group">
               <label htmlFor="timeSlot">Time Slot</label>
               <div className="custom-select-wrapper">
@@ -186,7 +185,6 @@ const ProctorSetAvailability: React.FC<ProctorSetAvailabilityProps> = ({ user })
               </div>
             </div>
 
-            {/* Status */}
             <div className="form-group">
               <label htmlFor="status">Status</label>
               <div className="custom-select-wrapper">
@@ -204,7 +202,6 @@ const ProctorSetAvailability: React.FC<ProctorSetAvailabilityProps> = ({ user })
               </div>
             </div>
 
-            {/* Remarks */}
             <div className="form-group">
               <label htmlFor="remarks">Remarks</label>
               <textarea
@@ -219,7 +216,6 @@ const ProctorSetAvailability: React.FC<ProctorSetAvailabilityProps> = ({ user })
           </form>
         </div>
 
-        {/* Change Request */}
         <div className="availability-card">
           <div className="card-header-request">Request Change of Availability</div>
           <div className="subtitle">(only available after the release of exam schedule)</div>

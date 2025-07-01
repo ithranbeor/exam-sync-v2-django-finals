@@ -1,6 +1,6 @@
 :root {
   --sidebar-width: 250px;
-  --sidebar-closed-width: 60px;
+  --sidebar-closed-width: 50px;
   --primary-blue: #1e90ff;
   --dark-blue-bg: #092C4C; 
   --light-gray-bg: #f5f7fa;
@@ -32,7 +32,6 @@ body {
   box-sizing: border-box;
 }
 
-/* No changes needed for top-bar */
 .top-bar {
   background-color: #f8f9fa;
   padding: 10px 20px;
@@ -68,7 +67,6 @@ button.view-button {
   width: var(--sidebar-closed-width);
   min-width: var(--sidebar-closed-width);
   transition: width var(--transition-speed) var(--transition-timing-function);
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -197,7 +195,7 @@ button.view-button {
 .sidebar-divider {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   margin: 10px 0;
-  width: 80%;
+  width: 100%;
   align-self: center;
 }
 
@@ -369,7 +367,7 @@ button.view-button {
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 10px;
-  border: 2px solid var(--primary-blue);
+  border: 2px solid var(--active-menu-bg);
 }
 
 .faculty-info-card h4 {
@@ -435,10 +433,11 @@ button.view-button {
 }
 
 .sidebar-nav ul li.active button {
-  background-color: var(--active-menu-bg);
-  color: var(--active-menu-text); 
+  background-color: #f5f7fa;
+  color:#F2994A; 
   font-weight: bold;
-  border-radius: 5px;
+  border-radius: 100px;
+  width: 1000%;
 }
 
 .sidebar-nav ul li button:hover {
@@ -447,11 +446,11 @@ button.view-button {
 }
 
 .sidebar-nav ul li.active button:hover {
-  background-color: color-mix(in srgb, var(--active-menu-bg) 80%, black);
+  background-color: #f5f7fa;
 }
 
 .sidebar-nav ul li.active button .icon {
-  color: var(--active-menu-text);
+  color: #F2994A;
 }
 
 .sidebar-footer button {

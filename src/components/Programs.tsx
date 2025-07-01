@@ -201,7 +201,11 @@ const Programs: React.FC<ProgramsProps> = ({ user }) => {
         <table className="colleges-table">
           <thead>
             <tr>
-              <th>#</th><th>ID</th><th>Name</th><th>Department</th><th>Actions</th>
+              <th>#</th>
+              <th>Program ID</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -237,7 +241,7 @@ const Programs: React.FC<ProgramsProps> = ({ user }) => {
         <div className="modal-overlay"><div className="modal">
           <h3 style={{ textAlign:'center' }}>{editMode ? 'Edit Program' : 'Add Program'}</h3>
           <div className="input-group">
-            <label>Program ID</label>
+            <label>Program Code</label>
             <input type="text" value={newProgId} placeholder="Program ID"
               onChange={e => setNewProgId(e.target.value)} disabled={editMode}/>
           </div>

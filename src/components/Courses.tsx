@@ -10,6 +10,9 @@ import '../styles/colleges.css';
 interface Term {
   term_id: number;
   term_name: string;
+  tbl_examperiod?: {
+    academic_year: string;
+  };
 }
 
 interface User {
@@ -53,30 +56,77 @@ const Courses: React.FC = () => {
     const { data, error } = await supabase
       .from('tbl_course')
       .select(`
-        course_id, course_name, term_id, user_id,
-        tbl_term (term_name),
-        tbl_users (first_name, last_name)
+        course_id,
+        course_name,
+        term_id,
+        user_id,
+        tbl_term (
+          term_name,
+          tbl_examperiod (
+            academic_year
+          )
+        ),
+        tbl_users (
+          first_name,
+          last_name
+        )
       `);
 
     if (error) {
       toast.error('Failed to fetch courses');
+      console.error(error);
     } else {
-      const mapped = data.map((course: any) => ({
-        ...course,
-        term_name: course.tbl_term?.term_name,
-        user_fullname: `${course.tbl_users?.first_name} ${course.tbl_users?.last_name}`,
-      }));
+      const mapped = data.map((course: any) => {
+        const term = course.tbl_term;
+        const academicYear = Array.isArray(term?.tbl_examperiod) && term.tbl_examperiod.length > 0
+          ? term.tbl_examperiod[0].academic_year
+          : 'N/A';
+
+        return {
+          ...course,
+          term_name: `${term?.term_name || 'N/A'} (${academicYear})`,
+          user_fullname: `${course.tbl_users?.first_name || ''} ${course.tbl_users?.last_name || ''}`,
+        };
+      });
+
       setCourses(mapped);
     }
   };
 
   const fetchTerms = async () => {
-    const { data } = await supabase.from('tbl_term').select('*');
-    if (data) setTerms(data);
+    const { data, error } = await supabase
+      .from('tbl_term')
+      .select(`
+        term_id,
+        term_name,
+        tbl_examperiod (
+          academic_year
+        )
+      `);
+
+    if (error) {
+      console.error('Error fetching terms:', error);
+      return;
+    }
+
+    const mapped = data.map((term: any) => {
+      const academicYear = Array.isArray(term.tbl_examperiod) && term.tbl_examperiod.length > 0
+        ? term.tbl_examperiod[0].academic_year
+        : 'N/A';
+
+      return {
+        ...term,
+        tbl_examperiod: { academic_year: academicYear }
+      };
+    });
+
+    setTerms(mapped);
   };
 
   const fetchUsers = async () => {
-    const { data } = await supabase.from('tbl_users').select('user_id, first_name, last_name');
+    const { data } = await supabase
+      .from('tbl_users')
+      .select('user_id, first_name, last_name');
     if (data) setUsers(data);
   };
 
@@ -97,7 +147,9 @@ const Courses: React.FC = () => {
       if (error) toast.error('Failed to update course');
       else toast.success('Course updated');
     } else {
-      const { error } = await supabase.from('tbl_course').insert([{ course_id, course_name, term_id, user_id }]);
+      const { error } = await supabase
+        .from('tbl_course')
+        .insert([{ course_id, course_name, term_id, user_id }]);
       if (error) toast.error('Failed to add course');
       else toast.success('Course added');
     }
@@ -123,8 +175,8 @@ const Courses: React.FC = () => {
 
   const downloadTemplate = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
-      ['Course ID', 'Course Name', 'Term Name', 'Instructor Full Name'],
-      ['IT112', 'Computer Programming 1', '1st Semester', 'Ithran Beor Turno(No Middle Name)']
+      ['Course ID', 'Course Name', 'Term Name (Academic Year)', 'Instructor Full Name'],
+      ['IT112', 'Computer Programming 1', '1st Semester (2024-2025)', 'Ithran Beor Turno(No Middle Name)']
     ]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Courses Template');
@@ -147,12 +199,14 @@ const Courses: React.FC = () => {
       for (const row of json) {
         const course_id = row['Course ID']?.trim();
         const course_name = row['Course Name']?.trim();
-        const term_name = row['Term Name']?.trim();
+        const term_full = row['Term Name (Academic Year)']?.trim();
         const full_name = row['Instructor Full Name']?.trim();
 
-        if (!course_id || !course_name || !term_name || !full_name) continue;
+        if (!course_id || !course_name || !term_full || !full_name) continue;
 
-        const term = terms.find(t => t.term_name === term_name);
+        const [termName, year] = term_full.split(' (');
+        const academic_year = year?.replace(')', '');
+        const term = terms.find(t => t.term_name === termName && t.tbl_examperiod?.academic_year === academic_year);
         const user = users.find(u => `${u.first_name} ${u.last_name}` === full_name);
 
         if (!term || !user) continue;
@@ -213,7 +267,7 @@ const Courses: React.FC = () => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Course ID</th>
+              <th>Course Code</th>
               <th>Course Name</th>
               <th>Term</th>
               <th>Instructor</th>
@@ -255,7 +309,7 @@ const Courses: React.FC = () => {
           <div className="modal">
             <h3 style={{ textAlign: 'center' }}>{editMode ? 'Edit Course' : 'Add New Course'}</h3>
             <div className="input-group">
-              <label>Course ID</label>
+              <label>Course Code</label>
               <input type="text" value={newCourse.course_id} disabled={editMode}
                      onChange={(e) => setNewCourse({ ...newCourse, course_id: e.target.value })} />
             </div>
@@ -270,7 +324,9 @@ const Courses: React.FC = () => {
                       onChange={(e) => setNewCourse({ ...newCourse, term_id: parseInt(e.target.value) })}>
                 <option value="">Select Term</option>
                 {terms.map(term => (
-                  <option key={term.term_id} value={term.term_id}>{term.term_name}</option>
+                  <option key={term.term_id} value={term.term_id}>
+                    {term.term_name} ({term.tbl_examperiod?.academic_year})
+                  </option>
                 ))}
               </select>
             </div>

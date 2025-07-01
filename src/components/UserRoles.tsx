@@ -238,8 +238,9 @@ const UserRoles = () => {
         <table className="accounts-table">
           <thead>
             <tr>
-              <th>User ID</th>
+              <th>ID Number</th>
               <th>Name</th>
+              <th>Role/s</th>
               <th>Date Created</th>
               <th>Actions</th>
             </tr>
@@ -252,6 +253,20 @@ const UserRoles = () => {
                 <tr key={user.user_id}>
                   <td>{user.user_id}</td>
                   <td>{user.full_name}</td>
+                  <td>
+                    <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+                      {userRoles
+                        .filter(r => r.user_id === user.user_id)
+                        .map(role => {
+                          const roleName = roles.find(r => r.role_id === role.role_id)?.role_name;
+                          const college = colleges.find(c => c.college_id === role.college_id)?.college_name;
+                          const department = departments.find(d => d.department_id === role.department_id)?.department_name;
+                          const office = [college, department].filter(Boolean).join(' / ');
+                          return `${roleName}${office ? ` - ${office}` : ''}`;
+                        })
+                        .join('\n') || '-'}
+                    </pre>
+                  </td>
                   <td>{new Date(user.created_at).toLocaleString('en-US', {
                     month: '2-digit',
                     day: '2-digit',

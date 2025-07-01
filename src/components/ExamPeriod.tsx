@@ -173,7 +173,7 @@ const ExamPeriod: React.FC = () => {
   return (
     <div className="colleges-container">
       <div className="colleges-header">
-        <h2 className="colleges-title">Manage Exam Periods</h2>
+        <h2 className="colleges-title">Exam Periods</h2>
         <div className="search-bar-container">
           <div className="search-bar" onClick={() => setShowFilters(!showFilters)}>
             <FaSearch className="search-icon" />

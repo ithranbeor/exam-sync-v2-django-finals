@@ -156,7 +156,7 @@ const Rooms: React.FC = () => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Room ID</th>
+              <th>Room #</th>
               <th>Room Name</th>
               <th>Type</th>
               <th>Capacity</th>

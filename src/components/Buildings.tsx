@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import React, { useEffect, useState } from 'react';
-import { FaSearch, FaTrash, FaEdit, FaDownload } from 'react-icons/fa';
+import { FaSearch, FaTrash, FaEdit, FaDownload, FaEye } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 import { supabase } from '../lib/supabaseClient.ts';
@@ -12,11 +12,22 @@ interface Building {
   building_name: string;
 }
 
+interface Room {
+  room_id: string;
+  room_name: string;
+  room_type: string;
+  building_id: string;
+}
+
 const Buildings: React.FC = () => {
   const [buildings, setBuildings] = useState<Building[]>([]);
+  const [roomCounts, setRoomCounts] = useState<{ [key: string]: number }>({});
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedBuildingRooms, setSelectedBuildingRooms] = useState<Room[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showRoomModal, setShowRoomModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [newBuilding, setNewBuilding] = useState<Building>({
     building_id: '',
@@ -28,9 +39,36 @@ const Buildings: React.FC = () => {
   }, []);
 
   const fetchBuildings = async () => {
-    const { data, error } = await supabase.from('tbl_buildings').select('*');
-    if (error) toast.error('Failed to fetch buildings');
-    else setBuildings(data || []);
+    const { data: buildingData, error: buildingError } = await supabase
+      .from('tbl_buildings')
+      .select('*');
+
+    const { data: roomData, error: roomError } = await supabase
+      .from('tbl_rooms')
+      .select('room_id, room_name, room_type, building_id');
+
+    if (buildingError || roomError) {
+      toast.error('Failed to fetch data');
+      return;
+    }
+
+    setBuildings(buildingData || []);
+    setRooms(roomData || []);
+
+    const counts: { [key: string]: number } = {};
+    (roomData || []).forEach((room: Room) => {
+      if (room.building_id) {
+        counts[room.building_id] = (counts[room.building_id] || 0) + 1;
+      }
+    });
+
+    setRoomCounts(counts);
+  };
+
+  const openRoomModal = (buildingId: string) => {
+    const buildingRooms = rooms.filter(room => room.building_id === buildingId);
+    setSelectedBuildingRooms(buildingRooms);
+    setShowRoomModal(true);
   };
 
   const handleSubmit = async () => {
@@ -149,8 +187,9 @@ const Buildings: React.FC = () => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Building ID</th>
+              <th>Building #</th>
               <th>Building Name</th>
+              <th>Room Count</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -160,7 +199,14 @@ const Buildings: React.FC = () => {
                 <td>{index + 1}</td>
                 <td>{b.building_id}</td>
                 <td>{b.building_name}</td>
+                <td>{roomCounts[b.building_id] || 0}</td>
                 <td className="action-buttons">
+                  <button
+                    type="button"
+                    className="icon-button view-button"
+                    title="View Rooms"
+                    onClick={() => openRoomModal(b.building_id)}
+                  ><FaEye /></button>
                   <button
                     type="button"
                     className="icon-button edit-button"
@@ -179,7 +225,7 @@ const Buildings: React.FC = () => {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={4}>No buildings found.</td></tr>
+              <tr><td colSpan={5}>No buildings found.</td></tr>
             )}
           </tbody>
         </table>
@@ -212,12 +258,8 @@ const Buildings: React.FC = () => {
               />
             </div>
             <div className="modal-actions">
-              <button type="button" onClick={handleSubmit}>
-                Save
-              </button>
-              <button type="button" onClick={() => setShowModal(false)}>
-                Cancel
-              </button>
+              <button type="button" onClick={handleSubmit}>Save</button>
+              <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
             </div>
           </div>
         </div>
@@ -232,6 +274,39 @@ const Buildings: React.FC = () => {
             <div className="modal-actions">
               <button type="button" onClick={() => setShowImport(false)}>Done</button>
               <button type="button" onClick={() => setShowImport(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Room List Modal */}
+      {showRoomModal && (
+        <div className="modal-overlay">
+          <div className="modal" style={{ width: 600 }}>
+            <h3>Rooms in Building</h3>
+            <table className="accounts-table">
+              <thead>
+                <tr>
+                  <th>Room #</th>
+                  <th>Room Name</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedBuildingRooms.map(room => (
+                  <tr key={room.room_id}>
+                    <td>{room.room_id}</td>
+                    <td>{room.room_name}</td>
+                    <td>{room.room_type}</td>
+                  </tr>
+                ))}
+                {selectedBuildingRooms.length === 0 && (
+                  <tr><td colSpan={3}>No rooms found.</td></tr>
+                )}
+              </tbody>
+            </table>
+            <div className="modal-actions">
+              <button type='button' onClick={() => setShowRoomModal(false)}>Close</button>
             </div>
           </div>
         </div>
