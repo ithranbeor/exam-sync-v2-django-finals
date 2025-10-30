@@ -1,0 +1,1 @@
+web: gunicorn exam_sync_v2_django_finals.wsgi

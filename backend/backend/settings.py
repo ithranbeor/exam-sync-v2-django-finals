@@ -6,12 +6,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-66zj4z^+-6zsvac)9a5wau(k5_a!nc6z)fkl08*e^jg(h-$7qz'
 
-# SECURITY WARNING: don't run with debug turned on in productio
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Set the static root for collectstati
+# Set the static root for collectstatic
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
